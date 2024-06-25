@@ -28,9 +28,8 @@ import javax.swing.JTextArea;
 
 public class CopyResponseEditor implements ExtensionProvidedHttpResponseEditor {
 	
-	private MontoyaApi api;
-	private JComboBox<CopyProfile> profiles;
-	private EditorCreationContext creationContext;
+	private final MontoyaApi api;
+	private final JComboBox<CopyProfile> profiles;
 	private final JTextArea responseEditor;
 	private HttpRequestResponse requestResponse;
 	private boolean includeURLBoolean = false;
@@ -38,7 +37,6 @@ public class CopyResponseEditor implements ExtensionProvidedHttpResponseEditor {
 	public CopyResponseEditor(MontoyaApi api, JComboBox<CopyProfile> profiles, EditorCreationContext creationContext) {
 		this.api = api;
 		this.profiles = profiles;
-		this.creationContext = creationContext;
 		this.responseEditor = new JTextArea();
 		this.responseEditor.setLineWrap(true);
 		this.responseEditor.setWrapStyleWord(false);
@@ -78,7 +76,7 @@ public class CopyResponseEditor implements ExtensionProvidedHttpResponseEditor {
 		profileLabel.setFont(api.userInterface().currentDisplayFont().deriveFont(Font.BOLD, api.userInterface().currentDisplayFont().getSize() + 1));
         profileLabel.setForeground(Copier.FONT_COLOR);
 		
-		JComboBox<CopyProfile> profileCombo = new JComboBox();
+		JComboBox<CopyProfile> profileCombo = new JComboBox<>();
 		profileCombo.setMinimumSize(new Dimension(150, profileCombo.getPreferredSize().height));
 		profileCombo.setMaximumSize(profileCombo.getPreferredSize());
 		
@@ -94,21 +92,6 @@ public class CopyResponseEditor implements ExtensionProvidedHttpResponseEditor {
 			profileCombo.addItem(new CopyProfile("No Valid Profiles"));
 			profileCombo.setEnabled(false);
 		}
-				
-		profileCombo.addActionListener((ActionEvent e) -> {
-			this.responseEditor.setText(
-				new String(((CopyProfile) profileCombo.getSelectedItem())
-					.replace(this.requestResponse, false, true).response().toByteArray().getBytes(), StandardCharsets.UTF_8)
-			);
-			this.responseEditor.setCaretPosition(0);
-		});
-		
-		if (this.requestResponse != null && profileCombo.getItemCount() > 0) {
-			this.responseEditor.setText(
-				new String(((CopyProfile) profileCombo.getItemAt(0))
-					.replace(this.requestResponse, false, true).response().toByteArray().getBytes(), StandardCharsets.UTF_8)
-			);
-		}
 		
 		JCheckBox includeURL = new JCheckBox("Include URL");
 		includeURL.setSelected(includeURLBoolean);
@@ -123,11 +106,54 @@ public class CopyResponseEditor implements ExtensionProvidedHttpResponseEditor {
 		
 		JButton copyBothButton = new JButton("Copy Request + Response");
 		copyBothButton.addActionListener((ActionEvent e) -> {
-			String request = new String(((CopyProfile) profileCombo.getSelectedItem())
-				.replace(this.requestResponse, true, false).request().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			String request;
+			if (profileCombo.getSelectedItem() != null) {
+				request = new String(((CopyProfile) profileCombo.getSelectedItem())
+					.replace(this.requestResponse, true, false).request().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			} else {
+				request = new String(this.requestResponse.request().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			}
 			
 			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection((this.includeURLBoolean ? this.requestResponse.url() + "\n\n" : "") + request + (this.requestResponse.request().body().length() == 0 ? "" : "\n\n") + this.responseEditor.getText()), null);
 		});
+
+		profileCombo.addActionListener((ActionEvent e) -> {
+			this.responseEditor.setText("Running Response Copy Rules...");
+			copyButton.setEnabled(false);
+			copyBothButton.setEnabled(false);
+			(new Thread(() -> {
+				String response;
+				if (profileCombo.getSelectedItem() != null) {
+					response = new String(((CopyProfile) profileCombo.getSelectedItem())
+						.replace(this.requestResponse, false, true).response().toByteArray().getBytes(), StandardCharsets.UTF_8);
+				} else {
+					response = new String(this.requestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8);
+				}
+				this.responseEditor.setText(response);
+				this.responseEditor.setCaretPosition(0);
+				copyButton.setEnabled(true);
+				copyBothButton.setEnabled(true);
+			})).start();
+		});
+
+		if (this.requestResponse != null && profileCombo.getItemCount() > 0) {
+			this.responseEditor.setText("Running Response Copy Rules...");
+			copyButton.setEnabled(false);
+			copyBothButton.setEnabled(false);
+			(new Thread(() -> {
+				String response;
+				if (profileCombo.getSelectedItem() != null) {
+					response = new String(((CopyProfile) profileCombo.getSelectedItem())
+						.replace(this.requestResponse, false, true).response().toByteArray().getBytes(), StandardCharsets.UTF_8);
+				} else {
+					response = new String(this.requestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8);
+				}
+				this.responseEditor.setText(response);
+				this.responseEditor.setCaretPosition(0);
+				copyButton.setEnabled(true);
+				copyBothButton.setEnabled(true);
+			})).start();
+		}
 		
 		JScrollPane scrollPane = new JScrollPane(this.responseEditor);
 		TextLineNumber tln = new TextLineNumber(this.responseEditor);

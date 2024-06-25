@@ -528,7 +528,7 @@ public class CopyProfile {
 
 				HttpRequest http2 = HttpRequest.http2Request(httpRequest.httpService(), httpRequest.headers(), httpRequest.body());
 				// Make sure the request includes the correct method, path, and URL params.
-				httpRequest = http2.withMethod(httpRequest.method()).withPath(httpRequest.path()).withAddedParameters(queryParams);
+				httpRequest = http2.withMethod(httpRequest.method()).withPath(httpRequest.path()).withRemovedParameters(queryParams).withAddedParameters(queryParams);
 			}
 			
 			modified.add(HttpRequestResponse.httpRequestResponse(httpRequest, httpResponse));

@@ -58,7 +58,7 @@ public class Copier implements BurpExtension {
         api.extension().setName("Copier");
 		
 		new Logger(api.logging());
-		
+
 		// Suite Tab
 		JScrollPane suiteTab = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		
