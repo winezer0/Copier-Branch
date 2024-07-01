@@ -77,7 +77,7 @@ public class CopyProfile {
 	
 	public ArrayList<HttpRequestResponse> replace(List<HttpRequestResponse> requestResponses, boolean replaceRequest, boolean replaceResponse) {
 		ArrayList<HttpRequestResponse> modified = new ArrayList<>();
-		
+
 		for (HttpRequestResponse httpRequestResponse : requestResponses) {
 
 			HttpRequest httpRequest = httpRequestResponse.request();
@@ -149,7 +149,7 @@ public class CopyProfile {
 										// We have to remove each param individually and then add them back later for some reason.
 										httpRequest = httpRequest.withRemovedParameters(param);
 									}
-									httpRequest = httpRequest.withAddedParameters(updatedParams);								
+									httpRequest = httpRequest.withAddedParameters(updatedParams);
 									break;
 								}
 								// Request URL Param Name
@@ -170,7 +170,7 @@ public class CopyProfile {
 										// We have to remove each param individually and then add them back later for some reason.
 										httpRequest = httpRequest.withRemovedParameters(param);
 									}
-									httpRequest = httpRequest.withAddedParameters(updatedParams);								
+									httpRequest = httpRequest.withAddedParameters(updatedParams);
 									break;
 								}
 								// Request URL Param Value
@@ -188,7 +188,7 @@ public class CopyProfile {
 										// We have to remove each param individually and then add them back later for some reason.
 										httpRequest = httpRequest.withRemovedParameters(param);
 									}
-									httpRequest = httpRequest.withAddedParameters(updatedParams);								
+									httpRequest = httpRequest.withAddedParameters(updatedParams);
 									break;
 								}
 								// Request Headers
@@ -394,6 +394,13 @@ public class CopyProfile {
 					}
 				}
 
+				// Figure out what line breaks are used for headers.
+				String headersString = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8).substring(0, httpResponse.bodyOffset());
+				String linebreak = "\r\n";
+				if (!headersString.contains(linebreak)) {
+					linebreak = "\n";
+				}
+
 				for (Rule replacement : this.getResponseRulesTableModel().getData()) {
 					if (replacement.isEnabled()) {
 						try {
@@ -406,7 +413,7 @@ public class CopyProfile {
 								}
 								// Response Status Line
 								case 1 -> {
-									String[] entireResponseAsArray =  (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
 									if (entireResponseAsArray.length > 0) {
 										entireResponseAsArray[0] = replacement.getPattern().matcher(entireResponseAsArray[0]).replaceAll(replacement.getReplace());
 									} else {
@@ -417,22 +424,38 @@ public class CopyProfile {
 								}
 								// Response Headers
 								case 2 -> {
-									String headers = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8).substring(0, httpResponse.bodyOffset());
-									String linebreak = "\r\n";
-									if (!headers.contains(linebreak)) {
-										linebreak = "\n";
+									String statusLine = "";
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									if (entireResponseAsArray.length > 0) {
+										statusLine = entireResponseAsArray[0];
+									} else {
+										break;
 									}
-									headers = replacement.getPattern().matcher(headers.strip() + linebreak).replaceAll(replacement.getReplace());
-									// Remove blank lines.
-									while (headers.contains("\r\n\r\n") || headers.contains("\n\n")) {
-										headers = headers.replace("\r\n\r\n", "\r\n").replace("\n\n", "\n");
+
+									List<HttpHeader> headers = httpResponse.headers();
+									StringBuilder sb = new StringBuilder();
+									for (HttpHeader header : headers) {
+										sb.append(header.toString()).append(linebreak);
 									}
-									
-									httpResponse = HttpResponse.httpResponse(headers + linebreak + httpResponse.bodyToString());
+
+									String updatedHeaders = replacement.getPattern().matcher(sb.toString()).replaceAll(replacement.getReplace());
+									while (updatedHeaders.contains("\r\n\r\n") || updatedHeaders.contains("\n\n")) {
+										updatedHeaders = updatedHeaders.replace("\r\n\r\n", "\r\n").replace("\n\n", "\n");
+									}
+
+									httpResponse = HttpResponse.httpResponse(statusLine + linebreak + updatedHeaders + linebreak + httpResponse.bodyToString());
 									break;
 								}
 								// Response Header
 								case 3 -> {
+									String statusLine = "";
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									if (entireResponseAsArray.length > 0) {
+										statusLine = entireResponseAsArray[0];
+									} else {
+										break;
+									}
+
 									List<HttpHeader> headers = httpResponse.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
@@ -446,18 +469,26 @@ public class CopyProfile {
 												updatedHeaders.add(header);
 											}
 										}
-
-										// We have to remove each header individually and then add them back later to preserve the order.
-										httpResponse = httpResponse.withRemovedHeader(header);
 									}
 
+									StringBuilder sb = new StringBuilder();
 									for (HttpHeader header : updatedHeaders) {
-										httpResponse = httpResponse.withAddedHeader(header);
+										sb.append(header.toString()).append(linebreak);
 									}
+
+									httpResponse = HttpResponse.httpResponse(statusLine + linebreak + sb.toString() + linebreak + httpResponse.bodyToString());
 									break;
 								}
 								// Response Header Name
 								case 4 -> {
+									String statusLine = "";
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									if (entireResponseAsArray.length > 0) {
+										statusLine = entireResponseAsArray[0];
+									} else {
+										break;
+									}
+
 									List<HttpHeader> headers = httpResponse.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
@@ -471,28 +502,46 @@ public class CopyProfile {
 												updatedHeaders.add(header);
 											}
 										}
-
-										// We have to remove each header individually and then add them back later to preserve the order.
-										httpResponse = httpResponse.withRemovedHeader(header);
 									}
 
+									StringBuilder sb = new StringBuilder();
 									for (HttpHeader header : updatedHeaders) {
-										httpResponse = httpResponse.withAddedHeader(header);
+										sb.append(header.toString()).append(linebreak);
 									}
+
+									httpResponse = HttpResponse.httpResponse(statusLine + linebreak + sb.toString() + linebreak + httpResponse.bodyToString());
 									break;
 								}
 								// Response Header Value
 								case 5 -> {
+									String statusLine = "";
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									if (entireResponseAsArray.length > 0) {
+										statusLine = entireResponseAsArray[0];
+									} else {
+										break;
+									}
+
 									List<HttpHeader> headers = httpResponse.headers();
+									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
 										String headerValueString = replacement.getPattern().matcher(header.value()).replaceAll(replacement.getReplace());
 
 										// If header value has changed, update the header in the request
 										// Empty values are technically OK.
 										if (!headerValueString.equals(header.value())) {
-											httpResponse = httpResponse.withUpdatedHeader(header.name(), headerValueString);
+											updatedHeaders.add(HttpHeader.httpHeader(header.name(), headerValueString));
+										} else {
+											updatedHeaders.add(header);
 										}
 									}
+
+									StringBuilder sb = new StringBuilder();
+									for (HttpHeader header : updatedHeaders) {
+										sb.append(header.toString()).append(linebreak);
+									}
+
+									httpResponse = HttpResponse.httpResponse(statusLine + linebreak + sb.toString() + linebreak + httpResponse.bodyToString());
 									break;
 								}
 								// Response Body
