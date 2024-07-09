@@ -1,5 +1,6 @@
 package com.whiteoaksecurity.copier;
 
+import burp.api.montoya.http.message.HttpMessage;
 import com.whiteoaksecurity.copier.models.ResponseRulesTableModel;
 import com.whiteoaksecurity.copier.models.RequestRulesTableModel;
 import burp.api.montoya.http.message.HttpHeader;
@@ -68,7 +69,16 @@ public class CopyProfile {
 	public void setUpdateResponseContentLength(boolean update) {
 		this.updateResponseContentLength = update;
 	}
-	
+
+	public String getFirstLine(HttpMessage httpMessage) {
+		String[] entireResponseAsArray = (new String(httpMessage.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+		if (entireResponseAsArray.length > 0) {
+			return entireResponseAsArray[0];
+		} else {
+			return null;
+		}
+	}
+
 	public HttpRequestResponse replace(HttpRequestResponse requestResponse, boolean replaceRequest, boolean replaceResponse) {
 		ArrayList<HttpRequestResponse> temp = new ArrayList<>();
 		temp.add(requestResponse);
@@ -122,6 +132,9 @@ public class CopyProfile {
 									} else {
 										break;
 									}
+
+
+
 									httpRequest = HttpRequest.httpRequest(httpRequest.httpService(), String.join("\r\n", entireRequestAsArray));
 									break;
 								}
@@ -424,11 +437,8 @@ public class CopyProfile {
 								}
 								// Response Headers
 								case 2 -> {
-									String statusLine = "";
-									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
-									if (entireResponseAsArray.length > 0) {
-										statusLine = entireResponseAsArray[0];
-									} else {
+									String statusLine = getFirstLine(httpResponse);
+									if (statusLine == null) {
 										break;
 									}
 
@@ -448,11 +458,8 @@ public class CopyProfile {
 								}
 								// Response Header
 								case 3 -> {
-									String statusLine = "";
-									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
-									if (entireResponseAsArray.length > 0) {
-										statusLine = entireResponseAsArray[0];
-									} else {
+									String statusLine = getFirstLine(httpResponse);
+									if (statusLine == null) {
 										break;
 									}
 
@@ -481,11 +488,8 @@ public class CopyProfile {
 								}
 								// Response Header Name
 								case 4 -> {
-									String statusLine = "";
-									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
-									if (entireResponseAsArray.length > 0) {
-										statusLine = entireResponseAsArray[0];
-									} else {
+									String statusLine = getFirstLine(httpResponse);
+									if (statusLine == null) {
 										break;
 									}
 
@@ -514,11 +518,8 @@ public class CopyProfile {
 								}
 								// Response Header Value
 								case 5 -> {
-									String statusLine = "";
-									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
-									if (entireResponseAsArray.length > 0) {
-										statusLine = entireResponseAsArray[0];
-									} else {
+									String statusLine = getFirstLine(httpResponse);
+									if (statusLine == null) {
 										break;
 									}
 
