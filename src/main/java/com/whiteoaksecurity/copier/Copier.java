@@ -569,7 +569,7 @@ public class Copier implements BurpExtension {
 	
 	public static void resizeColumnWidth(JTable table) {
 		TableColumnModel columnModel = table.getColumnModel();
-		// Enabled Column
+		// EnabledBase64 Column
 		columnModel.getColumn(0).sizeWidthToFit();
 		columnModel.getColumn(0).setResizable(false);
 		

@@ -9,7 +9,7 @@ import javax.swing.table.AbstractTableModel;
 public class RulesTableModel extends AbstractTableModel {
 	
 	String ruleType = "Rule";
-	private final String[] columnNames = {"Enabled", "Location", "Match", "Replace", "Type", "Case Sensitive", "Comment"};
+	private final String[] columnNames = {"EnabledBase64", "Location", "Match", "Replace", "Type", "Case Sensitive", "Comment"};
 	String[] locations;
 	private ArrayList<Rule> data = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public class RulesTableModel extends AbstractTableModel {
 		Rule r = this.data.get(rowIndex);
 		
 		return switch (columnIndex) {
-			case 0 -> r.isEnabled();
+			case 0 -> r.isEnabledBase64();
 			case 1 -> locations[r.getLocation()];
 			case 2 -> r.getMatch();
 			case 3 -> r.getReplace();
@@ -79,7 +79,7 @@ public class RulesTableModel extends AbstractTableModel {
 		Rule r = data.get(rowIndex);
 		
 		switch (columnIndex) {
-			case 0 -> r.setIsEnabled((Boolean) value);
+			case 0 -> r.setIsEnabledBase64((Boolean) value);
 		}
 	}
 	

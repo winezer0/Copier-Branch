@@ -39,9 +39,9 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			String title = "";
 			String submit = "";
 
-			JLabel enabledLabel = new JLabel("Enabled:");
-			JCheckBox enabled = new JCheckBox();
-			enabled.setSelected(true);
+			JLabel enabledBase64Label = new JLabel("EnabledBase64:");
+			JCheckBox enabledBase64 = new JCheckBox();
+			enabledBase64.setSelected(true);
 			JLabel locationLabel = new JLabel("Location:");
 			JComboBox locations = new JComboBox(model.getLocations());
 			locations.setMaximumSize(locations.getPreferredSize());
@@ -67,7 +67,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					title = "Edit " + model.getRuleType() + " Rule";
 					submit = "Edit";
 					this.rule = model.getData().get(table.getSelectedRow());
-					enabled.setSelected(this.rule.isEnabled());
+					enabledBase64.setSelected(this.rule.isEnabledBase64());
 					locations.setSelectedItem(model.getLocations()[this.rule.getLocation()]);
 					matchField.setText(this.rule.getMatch());
 					replaceField.setText(this.rule.getReplace());
@@ -99,7 +99,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					switch (event.getActionCommand()) {
 						case "Add" -> {
 							this.rule = new Rule(
-								enabled.isSelected(),
+								enabledBase64.isSelected(),
 								locations.getSelectedIndex(),
 								matchField.getText(),
 								replaceField.getText(),
@@ -119,7 +119,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							// Do this last since we need to compile the pattern using potentially new flags.
 							this.rule.setMatch(matchField.getText());
 
-							this.rule.setIsEnabled(enabled.isSelected());
+							this.rule.setIsEnabledBase64(enabledBase64.isSelected());
 						}
 					}
 
@@ -143,7 +143,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addGap(15)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(enabledLabel)
+					.addComponent(enabledBase64Label)
 					.addComponent(locationLabel)
 					.addComponent(matchLabel)
 					.addComponent(replaceLabel)
@@ -152,7 +152,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(commentLabel)
 				)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(enabled)
+					.addComponent(enabledBase64)
 					.addComponent(locations)
 					.addComponent(matchField)
 					.addComponent(replaceField)
@@ -171,8 +171,8 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGap(15)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(enabledLabel)
-					.addComponent(enabled)
+					.addComponent(enabledBase64Label)
+					.addComponent(enabledBase64)
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(locationLabel)

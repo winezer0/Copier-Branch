@@ -12,7 +12,7 @@ public class Rule {
 	public static final boolean REGEX = true;
 	public static final boolean LITERAL = false;
 	
-	private boolean enabled;
+	private boolean enabledBase64;
 	private int location;
 	private String match;
 	private Pattern pattern;
@@ -22,14 +22,14 @@ public class Rule {
 	private String comment;
 	
 	@JsonCreator
-	public Rule(@JsonProperty("enabled") boolean enabled,
+	public Rule(@JsonProperty("enabledBase64") boolean enabledBase64,
 				@JsonProperty("location") int location,
 				@JsonProperty("match") String match,
 				@JsonProperty("replace") String replace,
 				@JsonProperty("regex") boolean regex,
 				@JsonProperty("caseSensitive") boolean caseSensitive,
 				@JsonProperty("comment") String comment) {
-		this.enabled = enabled;
+		this.enabledBase64 = enabledBase64;
 		this.location = location;
 		this.match = match;
 		this.replace = replace;
@@ -50,12 +50,12 @@ public class Rule {
 			this.pattern = Pattern.compile(match, flags);
 		} catch (PatternSyntaxException e) {
 			this.pattern = null;
-			this.enabled = false;
+			this.enabledBase64 = false;
 		}
 	}
 	
-	public boolean isEnabled() {
-		return this.enabled;
+	public boolean isEnabledBase64() {
+		return this.enabledBase64;
 	}
 	
 	public int getLocation() {
@@ -90,8 +90,8 @@ public class Rule {
 		return locations[this.location] + ": " + this.match + " -> " + this.replace;
 	}
 	
-	public void setIsEnabled(boolean enabled) {
-		this.enabled = enabled;
+	public void setIsEnabledBase64(boolean enabledBase64) {
+		this.enabledBase64 = enabledBase64;
 		this.compile(this.match);
 	}
 	
@@ -134,7 +134,7 @@ public class Rule {
 			this.pattern = Pattern.compile(match, flags);
 		} catch (PatternSyntaxException e) {
 			this.pattern = null;
-			this.enabled = false;
+			this.enabledBase64 = false;
 		}
 	}
 }

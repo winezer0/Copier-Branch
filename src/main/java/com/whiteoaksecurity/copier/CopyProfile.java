@@ -115,7 +115,7 @@ public class CopyProfile {
 			
 			if (replaceRequest) {
 				for (Rule replacement : this.getRequestRulesTableModel().getData()) {
-					if (replacement.isEnabled()) {
+					if (replacement.isEnabledBase64()) {
 						try {
 							switch (replacement.getLocation()) {
 								// Entire Request
@@ -415,7 +415,7 @@ public class CopyProfile {
 				}
 
 				for (Rule replacement : this.getResponseRulesTableModel().getData()) {
-					if (replacement.isEnabled()) {
+					if (replacement.isEnabledBase64()) {
 						try {
 							switch (replacement.getLocation()) {
 								// Entire Response
