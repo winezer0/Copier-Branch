@@ -28,7 +28,8 @@ public class CopyProfile {
 
 	public static final String RESPONSE_STRING = "responseString";
 	public static final String REQUEST_STRING = "requestString";
-	public static final String NO_CONTENT = "No Content";
+	public static final String NONE_REQUEST_STRING = "No Request String";
+	public static final String NONE_RESPONSE_STRING = "No response String";
 
 	@JsonCreator
 	public CopyProfile(@JsonProperty("name") String name) {
@@ -595,8 +596,8 @@ public class CopyProfile {
 		// 创建一个 Map 对象来存储键值对
 		Map<String, String> map = new LinkedHashMap<>();
 
-		String requestString = NO_CONTENT;
-		String responseString = NO_CONTENT;
+		String requestString = NONE_REQUEST_STRING;
+		String responseString = NONE_RESPONSE_STRING;
 
 		if (copyRequest) {
 			HttpRequest httpRequest = httpRequestResponse.request();
@@ -636,6 +637,12 @@ public class CopyProfile {
 					}
 				}
 			}
+
+			//对结果进行base64编码
+			if (!requestString.isEmpty() && !NONE_REQUEST_STRING.equals(requestString) && requestRule.isEnabledBase64()){
+				requestString = base64EncodeString(requestString);
+			}
+
 			map.put(REQUEST_STRING, requestString);
 		}
 
@@ -677,11 +684,29 @@ public class CopyProfile {
 				}
 			}
 
+			//对结果进行base64编码
+			if (!responseString.isEmpty() && !NONE_REQUEST_STRING.equals(responseString) && responseRule.isEnabledBase64()){
+				responseString = base64EncodeString(responseString);
+			}
+
 			map.put(RESPONSE_STRING, responseString);
 		}
 
 		return map;
 	}
+
+	/**
+	 * 进行base64编码字符串
+	 * @return
+	 */
+	private String base64EncodeString(String string) {
+		// 将字符串转换为字节数组
+		byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
+		// 使用 Base64 进行编码
+		String encodedString = Base64.getEncoder().encodeToString(bytes);
+		return encodedString;
+	}
+
 
 	/**
 	 * 获取指定部位的数据
