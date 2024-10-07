@@ -18,7 +18,7 @@ public class Rule {
 	private Pattern pattern;
 	private String replace;
 	private boolean regex;
-	private boolean caseSensitive;
+	private boolean storeLocate;
 	private String comment;
 	
 	@JsonCreator
@@ -27,20 +27,17 @@ public class Rule {
 				@JsonProperty("match") String match,
 				@JsonProperty("replace") String replace,
 				@JsonProperty("regex") boolean regex,
-				@JsonProperty("caseSensitive") boolean caseSensitive,
+				@JsonProperty("storeLocate") boolean storeLocate,
 				@JsonProperty("comment") String comment) {
 		this.enabledBase64 = enabledBase64;
 		this.location = location;
 		this.match = match;
 		this.replace = replace;
 		this.regex = regex;
-		this.caseSensitive = caseSensitive;
+		this.storeLocate = storeLocate;
 		this.comment = comment;
 		
 		int flags = Pattern.DOTALL;
-		if (!this.caseSensitive) {
-			flags = flags | Pattern.CASE_INSENSITIVE;
-		}
 		
 		if (this.regex == LITERAL) {
 			flags = flags | Pattern.LITERAL;
@@ -78,8 +75,8 @@ public class Rule {
 		return this.regex;
 	}
 	
-	public boolean isCaseSensitive() {
-		return this.caseSensitive;
+	public boolean isStoreLocate() {
+		return this.storeLocate;
 	}
 	
 	public String getComment() {
@@ -92,7 +89,7 @@ public class Rule {
 	
 	public void setIsEnabledBase64(boolean enabledBase64) {
 		this.enabledBase64 = enabledBase64;
-		this.compile(this.match);
+		this.compile(this.match, false);
 	}
 	
 	public void setLocation(int location) {
@@ -101,7 +98,7 @@ public class Rule {
 	
 	public void setMatch(String match) {
 		this.match = match;
-		this.compile(match);
+		this.compile(match, false);
 	}
 	
 	public void setReplace(String replace) {
@@ -112,17 +109,17 @@ public class Rule {
 		this.regex = type;
 	}
 	
-	public void setIsCaseSensitive(boolean caseSensitive) {
-		this.caseSensitive = caseSensitive;
+	public void setIsStoreLocate(boolean storeLocate) {
+		this.storeLocate = storeLocate;
 	}
 	
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
 	
-	public void compile(String match) {
+	public void compile(String match, boolean caseSensitive) {
 		int flags = Pattern.DOTALL;
-		if (!this.caseSensitive) {
+		if (!caseSensitive) {
 			flags = flags | Pattern.CASE_INSENSITIVE;
 		}
 		

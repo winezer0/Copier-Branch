@@ -68,7 +68,7 @@ public class RulesTableModel extends AbstractTableModel {
 			case 2 -> r.getMatch();
 			case 3 -> r.getReplace();
 			case 4 -> r.isRegex() ? "Regex" : "Literal";
-			case 5 -> r.isCaseSensitive();
+			case 5 -> r.isStoreLocate();
 			case 6 -> r.getComment();
 			default -> "";
 		};

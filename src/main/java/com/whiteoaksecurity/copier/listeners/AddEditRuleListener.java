@@ -39,7 +39,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			String title = "";
 			String submit = "";
 
-			JLabel enabledBase64Label = new JLabel("EnabledBase64:");
+			JLabel enabledBase64Label = new JLabel("Enabled Base64:");
 			JCheckBox enabledBase64 = new JCheckBox();
 			enabledBase64.setSelected(true);
 			JLabel locationLabel = new JLabel("Location:");
@@ -52,9 +52,9 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			JLabel regexLabel = new JLabel("Regex:");
 			JCheckBox regex = new JCheckBox();
 			regex.setSelected(true);
-			JLabel caseSensitiveLabel = new JLabel("Case Sensitive:");
-			JCheckBox caseSensitive = new JCheckBox();
-			caseSensitive.setSelected(false);
+			JLabel storeLocateLabel = new JLabel("Store Locate:");
+			JCheckBox storeLocate = new JCheckBox();
+			storeLocate.setSelected(false);
 			JLabel commentLabel = new JLabel("Comment:");
 			JTextField commentField = new JTextField(20);
 
@@ -72,7 +72,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					matchField.setText(this.rule.getMatch());
 					replaceField.setText(this.rule.getReplace());
 					regex.setSelected(this.rule.isRegex());
-					caseSensitive.setSelected(this.rule.isCaseSensitive());
+					storeLocate.setSelected(this.rule.isStoreLocate());
 					commentField.setText(this.rule.getComment());
 				}
 			}
@@ -92,7 +92,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 //					ruleErrorLabel.setText("Match cannot be empty.");
 //					ruleDialog.pack();
 //				} else
-				if (matchField.getText().length() > 0 && !checkRegex(matchField.getText(), caseSensitive.isSelected(), regex.isSelected())) {
+				if (matchField.getText().length() > 0 && !checkRegex(matchField.getText(), false, regex.isSelected())) {
 					ruleErrorLabel.setText("Match regex is invalid.");
 					ruleDialog.pack();
 				} else {
@@ -104,7 +104,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 								matchField.getText(),
 								replaceField.getText(),
 								regex.isSelected(),
-								caseSensitive.isSelected(),
+								storeLocate.isSelected(),
 								commentField.getText()
 							);
 							model.add(this.rule);
@@ -113,7 +113,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							this.rule.setLocation(locations.getSelectedIndex());
 							this.rule.setReplace(replaceField.getText());
 							this.rule.setIsRegex(regex.isSelected());
-							this.rule.setIsCaseSensitive(caseSensitive.isSelected());
+							this.rule.setIsStoreLocate(storeLocate.isSelected());
 							this.rule.setComment(commentField.getText());
 
 							// Do this last since we need to compile the pattern using potentially new flags.
@@ -148,7 +148,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(matchLabel)
 					.addComponent(replaceLabel)
 					.addComponent(regexLabel)
-					.addComponent(caseSensitiveLabel)
+					.addComponent(storeLocateLabel)
 					.addComponent(commentLabel)
 				)
 				.addGroup(layout.createParallelGroup()
@@ -157,7 +157,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(matchField)
 					.addComponent(replaceField)
 					.addComponent(regex)
-					.addComponent(caseSensitive)
+					.addComponent(storeLocate)
 					.addComponent(commentField)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(submitButton)
@@ -191,8 +191,8 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(regex)
 				)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(caseSensitiveLabel)
-					.addComponent(caseSensitive)
+					.addComponent(storeLocateLabel)
+					.addComponent(storeLocate)
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(commentLabel)
@@ -220,7 +220,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 		if (!caseSensitive) {
 			flags = flags | Pattern.CASE_INSENSITIVE;
 		}
-		
+
 		if (regex == Rule.LITERAL) {
 			flags = flags | Pattern.LITERAL;
 		}
