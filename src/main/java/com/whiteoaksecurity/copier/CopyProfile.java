@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CopyProfile {
-	
+
 	private String name;
 	private RequestRulesTableModel requestRulesTableModel;
 	private ResponseRulesTableModel responseRulesTableModel;
@@ -114,20 +114,21 @@ public class CopyProfile {
 			HttpResponse httpResponse = httpRequestResponse.response();
 			
 			if (replaceRequest) {
-				for (Rule replacement : this.getRequestRulesTableModel().getData()) {
+				ArrayList<Rule> requestRules = this.getRequestRulesTableModel().getData();
+				for (Rule requestRule : requestRules) {
 						try {
-							switch (replacement.getLocation()) {
+							switch (requestRule.getLocation()) {
 								// Entire Request
 								case 0 -> {
 									String entireRequest = httpRequest.toByteArray().toString();
-									httpRequest = HttpRequest.httpRequest(httpRequest.httpService(), replacement.getPattern().matcher(entireRequest).replaceAll(replacement.getReplace()));
+									httpRequest = HttpRequest.httpRequest(httpRequest.httpService(), requestRule.getPattern().matcher(entireRequest).replaceAll(requestRule.getReplace()));
 									break;
 								}
 								// Request Line
 								case 1 -> {
 									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
 									if (entireRequestAsArray.length > 0) {
-										entireRequestAsArray[0] = replacement.getPattern().matcher(entireRequestAsArray[0]).replaceAll(replacement.getReplace());
+										entireRequestAsArray[0] = requestRule.getPattern().matcher(entireRequestAsArray[0]).replaceAll(requestRule.getReplace());
 									} else {
 										break;
 									}
@@ -144,7 +145,7 @@ public class CopyProfile {
 									List<HttpParameter> updatedParams = new ArrayList<>();
 									for (ParsedHttpParameter param : params) {
 										if (param.type().equals(HttpParameterType.URL)) {
-											String paramString = replacement.getPattern().matcher(entireRequest.substring(param.nameOffsets().startIndexInclusive(), param.valueOffsets().endIndexExclusive())).replaceAll(replacement.getReplace());
+											String paramString = requestRule.getPattern().matcher(entireRequest.substring(param.nameOffsets().startIndexInclusive(), param.valueOffsets().endIndexExclusive())).replaceAll(requestRule.getReplace());
 											// If param is now empty, we don't add it back to the request.
 											if (!paramString.isEmpty()) {
 												String[] keyValue = paramString.split("=", 2);
@@ -170,7 +171,7 @@ public class CopyProfile {
 									List<HttpParameter> updatedParams = new ArrayList<>();
 									for (ParsedHttpParameter param : params) {
 										if (param.type().equals(HttpParameterType.URL)) {
-											String paramName = replacement.getPattern().matcher(param.name()).replaceAll(replacement.getReplace());
+											String paramName = requestRule.getPattern().matcher(param.name()).replaceAll(requestRule.getReplace());
 											// If param name is now empty, we don't add it back to the request.
 											if (!paramName.isEmpty()) {
 												updatedParams.add(HttpParameter.urlParameter(paramName, param.value()));
@@ -191,7 +192,7 @@ public class CopyProfile {
 									List<HttpParameter> updatedParams = new ArrayList<>();
 									for (ParsedHttpParameter param : params) {
 										if (param.type().equals(HttpParameterType.URL)) {
-											String paramValue = replacement.getPattern().matcher(param.value()).replaceAll(replacement.getReplace());
+											String paramValue = requestRule.getPattern().matcher(param.value()).replaceAll(requestRule.getReplace());
 											updatedParams.add(HttpParameter.urlParameter(param.name(), paramValue));
 										} else {
 											updatedParams.add(param);
@@ -210,7 +211,7 @@ public class CopyProfile {
 									if (!headers.contains(linebreak)) {
 										linebreak = "\n";
 									}
-									headers = replacement.getPattern().matcher(headers.strip() + linebreak).replaceAll(replacement.getReplace());
+									headers = requestRule.getPattern().matcher(headers.strip() + linebreak).replaceAll(requestRule.getReplace());
 									// Remove blank lines.
 									while (headers.contains("\r\n\r\n") || headers.contains("\n\n")) {
 										headers = headers.replaceAll("\r\n\r\n", "\r\n").replaceAll("\n\n", "\n");
@@ -224,7 +225,7 @@ public class CopyProfile {
 									List<HttpHeader> headers = httpRequest.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
-										String headerString = replacement.getPattern().matcher(header.toString()).replaceAll(replacement.getReplace());
+										String headerString = requestRule.getPattern().matcher(header.toString()).replaceAll(requestRule.getReplace());
 										// If header is now empty, we don't add it back into the request.
 										if (!headerString.isEmpty()) {
 											// If header has changed, update the header in the request.
@@ -249,7 +250,7 @@ public class CopyProfile {
 									List<HttpHeader> headers = httpRequest.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
-										String headerNameString = replacement.getPattern().matcher(header.name()).replaceAll(replacement.getReplace());
+										String headerNameString = requestRule.getPattern().matcher(header.name()).replaceAll(requestRule.getReplace());
 										// If header name is now empty, we don't add it back into the request.
 										if (!headerNameString.isEmpty()) {
 											// If header name has changed, update the header in the request.
@@ -273,7 +274,7 @@ public class CopyProfile {
 								case 8 -> {
 									List<HttpHeader> headers = httpRequest.headers();
 									for (HttpHeader header : headers) {
-										String headerValueString = replacement.getPattern().matcher(header.value()).replaceAll(replacement.getReplace());
+										String headerValueString = requestRule.getPattern().matcher(header.value()).replaceAll(requestRule.getReplace());
 
 										// If header value has changed, update the header in the request
 										// Empty values are technically OK.
@@ -285,7 +286,7 @@ public class CopyProfile {
 								}
 								// Request Body
 								case 9 -> {
-									httpRequest = httpRequest.withBody(replacement.getPattern().matcher(httpRequest.bodyToString()).replaceAll(replacement.getReplace()));
+									httpRequest = httpRequest.withBody(requestRule.getPattern().matcher(httpRequest.bodyToString()).replaceAll(requestRule.getReplace()));
 									// Since the Content-Length header gets updated automatically, we should reset it unless the user has
 									// specified otherwise.
 									if (!this.updateRequestContentLength && requestContentLength != null) {
@@ -301,7 +302,7 @@ public class CopyProfile {
 									for (ParsedHttpParameter param : params) {
 										if (param.type().equals(HttpParameterType.BODY))
 										{
-											String paramString = replacement.getPattern().matcher(entireRequest.substring(param.nameOffsets().startIndexInclusive(), param.valueOffsets().endIndexExclusive())).replaceAll(replacement.getReplace());
+											String paramString = requestRule.getPattern().matcher(entireRequest.substring(param.nameOffsets().startIndexInclusive(), param.valueOffsets().endIndexExclusive())).replaceAll(requestRule.getReplace());
 											// If param is now empty, we don't add it back to the request.
 											if (!paramString.isEmpty()) {
 												String[] keyValue = paramString.split("=", 2);
@@ -334,7 +335,7 @@ public class CopyProfile {
 									List<HttpParameter> updatedParams = new ArrayList<>();
 									for (ParsedHttpParameter param : params) {
 										if (param.type().equals(HttpParameterType.BODY)) {
-											String paramName = replacement.getPattern().matcher(param.name()).replaceAll(replacement.getReplace());
+											String paramName = requestRule.getPattern().matcher(param.name()).replaceAll(requestRule.getReplace());
 											// If param name is now empty, we don't add it back to the request.
 											if (!paramName.isEmpty()) {
 												updatedParams.add(HttpParameter.bodyParameter(paramName, param.value()));
@@ -362,7 +363,7 @@ public class CopyProfile {
 									List<HttpParameter> updatedParams = new ArrayList<>();
 									for (ParsedHttpParameter param : params) {
 										if (param.type().equals(HttpParameterType.BODY)) {
-											String paramValue = replacement.getPattern().matcher(param.value()).replaceAll(replacement.getReplace());
+											String paramValue = requestRule.getPattern().matcher(param.value()).replaceAll(requestRule.getReplace());
 											updatedParams.add(HttpParameter.bodyParameter(param.name(), paramValue));
 										} else {
 											updatedParams.add(param);
@@ -386,7 +387,7 @@ public class CopyProfile {
 						} catch (IndexOutOfBoundsException ex) {							
 							Logger.getLogger().logToError("An exception occurred when trying to execute a copy rule on a request: " + ex.getMessage());
 							Logger.getLogger().logToError("This usually means your replacement referenced a group which didn't exist in the match.");
-							Logger.getLogger().logToError("Replacement: " + replacement.toString(requestRulesTableModel.getLocations()) + "\n");
+							Logger.getLogger().logToError("Replacement: " + requestRule.toString(requestRulesTableModel.getLocations()) + "\n");
 					}
 				}
 			}
@@ -412,20 +413,21 @@ public class CopyProfile {
 					linebreak = "\n";
 				}
 
-				for (Rule replacement : this.getResponseRulesTableModel().getData()) {
+				ArrayList<Rule> responseRules = this.getResponseRulesTableModel().getData();
+				for (Rule responseRule : responseRules) {
 						try {
-							switch (replacement.getLocation()) {
+							switch (responseRule.getLocation()) {
 								// Entire Response
 								case 0 -> {
 									String entireResponse = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
-									httpResponse = HttpResponse.httpResponse(replacement.getPattern().matcher(entireResponse).replaceAll(replacement.getReplace()));
+									httpResponse = HttpResponse.httpResponse(responseRule.getPattern().matcher(entireResponse).replaceAll(responseRule.getReplace()));
 									break;
 								}
 								// Response Status Line
 								case 1 -> {
 									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
 									if (entireResponseAsArray.length > 0) {
-										entireResponseAsArray[0] = replacement.getPattern().matcher(entireResponseAsArray[0]).replaceAll(replacement.getReplace());
+										entireResponseAsArray[0] = responseRule.getPattern().matcher(entireResponseAsArray[0]).replaceAll(responseRule.getReplace());
 									} else {
 										break;
 									}
@@ -445,7 +447,7 @@ public class CopyProfile {
 										sb.append(header.toString()).append(linebreak);
 									}
 
-									String updatedHeaders = replacement.getPattern().matcher(sb.toString()).replaceAll(replacement.getReplace());
+									String updatedHeaders = responseRule.getPattern().matcher(sb.toString()).replaceAll(responseRule.getReplace());
 									while (updatedHeaders.contains("\r\n\r\n") || updatedHeaders.contains("\n\n")) {
 										updatedHeaders = updatedHeaders.replace("\r\n\r\n", "\r\n").replace("\n\n", "\n");
 									}
@@ -463,7 +465,7 @@ public class CopyProfile {
 									List<HttpHeader> headers = httpResponse.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
-										String headerString = replacement.getPattern().matcher(header.toString()).replaceAll(replacement.getReplace());
+										String headerString = responseRule.getPattern().matcher(header.toString()).replaceAll(responseRule.getReplace());
 										// If header is now empty, we don't add it back into the request.
 										if (!headerString.isEmpty()) {
 											// If header has changed, update the header in the request.
@@ -493,7 +495,7 @@ public class CopyProfile {
 									List<HttpHeader> headers = httpResponse.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
-										String headerNameString = replacement.getPattern().matcher(header.name()).replaceAll(replacement.getReplace());
+										String headerNameString = responseRule.getPattern().matcher(header.name()).replaceAll(responseRule.getReplace());
 										// If header name is now empty, we don't add it back into the request.
 										if (!headerNameString.isEmpty()) {
 											// If header name has changed, update the header in the request.
@@ -523,7 +525,7 @@ public class CopyProfile {
 									List<HttpHeader> headers = httpResponse.headers();
 									List<HttpHeader> updatedHeaders = new ArrayList<>();
 									for (HttpHeader header : headers) {
-										String headerValueString = replacement.getPattern().matcher(header.value()).replaceAll(replacement.getReplace());
+										String headerValueString = responseRule.getPattern().matcher(header.value()).replaceAll(responseRule.getReplace());
 
 										// If header value has changed, update the header in the request
 										// Empty values are technically OK.
@@ -544,7 +546,7 @@ public class CopyProfile {
 								}
 								// Response Body
 								case 6 -> {
-									httpResponse = httpResponse.withBody(replacement.getPattern().matcher(httpResponse.bodyToString()).replaceAll(replacement.getReplace()));
+									httpResponse = httpResponse.withBody(responseRule.getPattern().matcher(httpResponse.bodyToString()).replaceAll(responseRule.getReplace()));
 									
 									if (!this.updateResponseContentLength && responseContentLength != null) {
 										httpResponse = httpResponse.withUpdatedHeader("Content-Length", responseContentLength.toString());
@@ -557,7 +559,7 @@ public class CopyProfile {
 						} catch (IndexOutOfBoundsException ex) {
 							Logger.getLogger().logToError("An exception occurred when trying to execute a copy rule on a response: " + ex.getMessage());
 							Logger.getLogger().logToError("This usually means your replacement referenced a group which didn't exist in the match.");
-							Logger.getLogger().logToError("Replacement: " + replacement.toString(responseRulesTableModel.getLocations()) + "\n");
+							Logger.getLogger().logToError("Replacement: " + responseRule.toString(responseRulesTableModel.getLocations()) + "\n");
 					}
 				}
 			}
@@ -585,19 +587,116 @@ public class CopyProfile {
 
 	public String copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse) {
 		StringBuilder copyBuffer = new StringBuilder();
+
 		if (copyRequest) {
-			String requestString = new String(httpRequestResponse.request().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			//根据规则提取 请求数据
+			ArrayList<Rule> requestRules = this.getRequestRulesTableModel().getData();
+
+			//默认返回全文
+			HttpRequest httpRequest = httpRequestResponse.request();
+			String requestString = "No Content";
+			if (httpRequest != null){
+				requestString = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
+				if (requestRules.size() > 0){
+					//copy替换功能只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
+					Rule requestRule = requestRules.get(requestRules.size() - 1);
+
+					if (requestRules.size() > 1){
+						System.out.println(String.format("注意: 存在多条请求修改规则, 使用最后1条用于位置提取: %s", requestRule.toString()));
+					}
+
+					//勾选只保存已选定的位置,只保留指定的位置的数据
+					if (requestRule.isStoreLocate()){
+						try {
+							switch (requestRule.getLocation()) {
+								// Request line 保留请求行
+								case 1 -> {
+									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+									requestString = entireRequestAsArray[0];
+									if (entireRequestAsArray.length == 0) {
+										System.out.println("提示：没有找到请求行, 返回请求全文 ...");
+									}
+									break;
+								}
+								// Request Headers 请求头
+								case 5 -> {
+									requestString = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
+									break;
+								}
+								// Request Body 请求体
+								case 9 -> {
+									requestString = httpRequest.bodyToString();
+									break;
+								}
+								default -> {
+									System.out.println("提示：该选项不适用, 返回请求全文 ...");
+									break;
+								}
+							}
+						} catch (IndexOutOfBoundsException ex) {
+							Logger.getLogger().logToError("根据规则提取请求信息发生错误: " + ex.getMessage());
+						}
+					}
+				}
+			}
+			//拼接提取的数据
 			copyBuffer.append(requestString);
 		}
 
 		if (copyRequest && copyResponse) {
-			if (httpRequestResponse.request().body().length() > 0) {
-				copyBuffer.append("\n\n");
-			}
+			copyBuffer.append("\n\n");
 		}
 
 		if (copyResponse) {
-			String responseString = new String(httpRequestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			//根据规则提取 响应数据
+			ArrayList<Rule> responseRules = this.getResponseRulesTableModel().getData();
+
+			//默认返回
+			HttpResponse httpResponse = httpRequestResponse.response();
+			String responseString = "No Content";
+			if (httpResponse != null){
+				responseString = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
+				if (responseRules.size() > 0) {
+					//copy替换功能只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
+					Rule requestRule = responseRules.get(responseRules.size() - 1);
+
+					if (responseRules.size() > 1) {
+						System.out.println(String.format("注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s", requestRule.toString()));
+					}
+
+					try {
+						switch (requestRule.getLocation()) {
+							// Response Status Line 响应状态行
+							case 1 -> {
+								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+								if (entireResponseAsArray.length > 0) {
+									responseString = entireResponseAsArray[0];
+								}
+								break;
+							}
+							// Response Headers
+							case 2 -> {
+								responseString = httpResponse.toByteArray().toString().substring(0, httpResponse.bodyOffset());
+								break;
+							}
+							// Response Body
+							case 6 -> {
+								responseString = httpResponse.bodyToString();
+								break;
+							}
+
+							default -> {
+								System.out.println("提示：该选项不适用, 返回响应全文 ...");
+								break;
+							}
+						}
+					} catch (IndexOutOfBoundsException ex) {
+						Logger.getLogger().logToError("根据规则提取响应信息发生错误: " + ex.getMessage());
+					}
+				}
+			}
+
+			//拼接提取数据
 			copyBuffer.append(responseString);
 		}
 
