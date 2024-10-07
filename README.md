@@ -10,7 +10,7 @@ Download and import the CopyProfiles.json file in the examples directory to see 
 
 # TODO
 
-1、允许正则替换内容框为空
+1、允许正则替换内容框为空  OK 
 
 2、修改 Location 的 意思为 所需要复制的部位，而不是修改的地方【最好是参考 Case Sensitive 增加框, 用于选择是否只保留指定位置的数据】
 

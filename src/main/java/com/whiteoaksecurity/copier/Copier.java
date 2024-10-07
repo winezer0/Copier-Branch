@@ -1,7 +1,5 @@
 package com.whiteoaksecurity.copier;
-import com.whiteoaksecurity.copier.components.CopyRequestEditorProvider;
 import com.whiteoaksecurity.copier.components.CopyContextMenu;
-import com.whiteoaksecurity.copier.components.CopyResponseEditorProvider;
 import com.whiteoaksecurity.copier.models.RulesTableModel;
 import com.whiteoaksecurity.copier.models.ResponseRulesTableModel;
 import com.whiteoaksecurity.copier.models.RequestRulesTableModel;
@@ -566,9 +564,7 @@ public class Copier implements BurpExtension {
 		api.userInterface().applyThemeToComponent(suiteTab);
 		api.userInterface().registerSuiteTab("Copier", suiteTab);
 		api.userInterface().registerContextMenuItemsProvider(new CopyContextMenu(api, this.profiles));
-		
-		api.userInterface().registerHttpRequestEditorProvider(new CopyRequestEditorProvider(api, this.profiles));
-		api.userInterface().registerHttpResponseEditorProvider(new CopyResponseEditorProvider(api, this.profiles));
+
     }
 	
 	public static void resizeColumnWidth(JTable table) {
