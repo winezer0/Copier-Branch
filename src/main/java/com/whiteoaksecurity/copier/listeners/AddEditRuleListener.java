@@ -88,10 +88,6 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 
 			JButton submitButton = new JButton(submit);
 			submitButton.addActionListener((ActionEvent e) -> {
-//				if (matchField.getText().length() == 0) {
-//					ruleErrorLabel.setText("Match cannot be empty.");
-//					ruleDialog.pack();
-//				} else
 				if (matchField.getText().length() > 0 && !checkRegex(matchField.getText(), false, regex.isSelected())) {
 					ruleErrorLabel.setText("Match regex is invalid.");
 					ruleDialog.pack();
