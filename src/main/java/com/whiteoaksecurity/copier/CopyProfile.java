@@ -1,6 +1,8 @@
 package com.whiteoaksecurity.copier;
 
 import burp.api.montoya.http.message.HttpMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.whiteoaksecurity.copier.models.ResponseRulesTableModel;
 import com.whiteoaksecurity.copier.models.RequestRulesTableModel;
 import burp.api.montoya.http.message.HttpHeader;
@@ -12,9 +14,9 @@ import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class CopyProfile {
 
@@ -23,7 +25,11 @@ public class CopyProfile {
 	private ResponseRulesTableModel responseRulesTableModel;
 	private boolean updateRequestContentLength = false;
 	private boolean updateResponseContentLength = false;
-	
+
+	public static final String RESPONSE_STRING = "responseString";
+	public static final String REQUEST_STRING = "requestString";
+	public static final String NO_CONTENT = "No Content";
+
 	@JsonCreator
 	public CopyProfile(@JsonProperty("name") String name) {
 		this.name = name;
@@ -585,87 +591,62 @@ public class CopyProfile {
 		return modified;
 	}
 
-	public String copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse) {
-		StringBuilder copyBuffer = new StringBuilder();
+	public Map<String, String> copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
+		// 创建一个 Map 对象来存储键值对
+		Map<String, String> map = new LinkedHashMap<>();
+
+		String requestString = NO_CONTENT;
+		String responseString = NO_CONTENT;
 
 		if (copyRequest) {
-			//根据规则提取 请求数据
-			ArrayList<Rule> requestRules = this.getRequestRulesTableModel().getData();
-
-			//默认返回全文
 			HttpRequest httpRequest = httpRequestResponse.request();
-			String requestString = "No Content";
 			if (httpRequest != null){
+				//默认返回全文
 				requestString = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
-				if (requestRules.size() > 0){
-					//copy替换功能只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
-					Rule requestRule = requestRules.get(requestRules.size() - 1);
-
-					if (requestRules.size() > 1){
-						System.out.println(String.format("注意: 存在多条请求修改规则, 使用最后1条用于位置提取: %s", requestRule.toString()));
-					}
-
-					//勾选只保存已选定的位置,只保留指定的位置的数据
-					if (requestRule.isStoreLocate()){
-						try {
-							switch (requestRule.getLocation()) {
-								// Request line 保留请求行
-								case 1 -> {
-									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
-									requestString = entireRequestAsArray[0];
-									if (entireRequestAsArray.length == 0) {
-										System.out.println("提示：没有找到请求行, 返回请求全文 ...");
-									}
-									break;
+				//勾选只保存已选定的位置,只保留指定的位置的数据
+				if (requestRule.isStoreLocate()){
+					try {
+						switch (requestRule.getLocation()) {
+							// Request line 保留请求行
+							case 1 -> {
+								String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+								requestString = entireRequestAsArray[0];
+								if (entireRequestAsArray.length == 0) {
+									System.out.println("提示：没有找到请求行, 返回请求全文 ...");
 								}
-								// Request Headers 请求头
-								case 5 -> {
-									requestString = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
-									break;
-								}
-								// Request Body 请求体
-								case 9 -> {
-									requestString = httpRequest.bodyToString();
-									break;
-								}
-								default -> {
-									System.out.println("提示：该选项不适用, 返回请求全文 ...");
-									break;
-								}
+								break;
 							}
-						} catch (IndexOutOfBoundsException ex) {
-							Logger.getLogger().logToError("根据规则提取请求信息发生错误: " + ex.getMessage());
+							// Request Headers 请求头
+							case 5 -> {
+								requestString = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
+								break;
+							}
+							// Request Body 请求体
+							case 9 -> {
+								requestString = httpRequest.bodyToString();
+								break;
+							}
+							default -> {
+								System.out.println("提示：该选项不适用, 返回请求全文 ...");
+								break;
+							}
 						}
+					} catch (IndexOutOfBoundsException ex) {
+						Logger.getLogger().logToError("根据规则提取请求信息发生错误: " + ex.getMessage());
 					}
 				}
 			}
-			//拼接提取的数据
-			copyBuffer.append(requestString);
-		}
-
-		if (copyRequest && copyResponse) {
-			copyBuffer.append("\n\n");
+			map.put(REQUEST_STRING, requestString);
 		}
 
 		if (copyResponse) {
-			//根据规则提取 响应数据
-			ArrayList<Rule> responseRules = this.getResponseRulesTableModel().getData();
-
-			//默认返回
 			HttpResponse httpResponse = httpRequestResponse.response();
-			String responseString = "No Content";
 			if (httpResponse != null){
+				//默认返回全文
 				responseString = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
-				if (responseRules.size() > 0) {
-					//copy替换功能只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
-					Rule requestRule = responseRules.get(responseRules.size() - 1);
-
-					if (responseRules.size() > 1) {
-						System.out.println(String.format("注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s", requestRule.toString()));
-					}
-
+				if (responseRule.isStoreLocate()){
 					try {
-						switch (requestRule.getLocation()) {
+						switch (responseRule.getLocation()) {
 							// Response Status Line 响应状态行
 							case 1 -> {
 								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
@@ -696,11 +677,10 @@ public class CopyProfile {
 				}
 			}
 
-			//拼接提取数据
-			copyBuffer.append(responseString);
+			map.put(RESPONSE_STRING, responseString);
 		}
 
-		return copyBuffer.toString();
+		return map;
 	}
 
 	/**
@@ -710,15 +690,48 @@ public class CopyProfile {
 	public String copyLocateDate(List<HttpRequestResponse> httpRequestResponses, boolean copyRequest, boolean copyResponse) {
 		StringBuilder modified = new StringBuilder();
 
-		int counter = 1; //计数，用于判断是否在最后添加数据
-		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
-			modified.append(copyLocateDate(httpRequestResponse, copyRequest, copyResponse));
+		//copy替换功能只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
+		ArrayList<Rule> requestRules = this.getRequestRulesTableModel().getData();
+		Rule requestRule = null;
+		if (requestRules.size() > 0){
+			requestRule = requestRules.get(requestRules.size() - 1);
+			if (requestRules.size() > 1){System.out.println(String.format("注意: 存在多条请求修改规则, 使用最后1条用于位置提取: %s", requestRule.toString()));}
+		}
 
-			//添加末尾分隔符
-			if (counter != httpRequestResponses.size()) {
-				modified.append("\n\n\n");
+		//响应数据规则
+		ArrayList<Rule> responseRules = this.getResponseRulesTableModel().getData();
+		Rule responseRule = null;
+		if (responseRules.size() > 0) {
+			responseRule = responseRules.get(responseRules.size() - 1);
+			if (responseRules.size() > 1) { System.out.println(String.format("注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s", responseRule.toString()));}
+		}
+
+		//当Base64编码的情况下 输出Json格式数据
+		Boolean useJsonFormat = responseRule.isEnabledBase64() || requestRule.isEnabledBase64();
+
+		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
+			Map<String, String> copyLocateDate = copyLocateDate(httpRequestResponse, copyRequest, copyResponse, requestRule, responseRule);
+
+			if (!useJsonFormat){
+				//常规的字符串格式保存
+				StringBuilder copyBuffer = new StringBuilder();
+				if (copyRequest) { copyBuffer.append(copyLocateDate.get(REQUEST_STRING)); }
+				if (copyRequest && copyResponse) { copyBuffer.append("\n\n"); }
+				if (copyResponse) { copyBuffer.append(copyLocateDate.get(RESPONSE_STRING)); }
+				modified.append(copyBuffer);
+			} else {
+				//Json格式保存
+				// 创建 Jackson ObjectMapper 实例
+				String jsonString = null;
+				try {
+					jsonString = new ObjectMapper().writeValueAsString(copyLocateDate);
+				} catch (JsonProcessingException e) {
+					e.printStackTrace();
+				}
+				modified.append(jsonString);
 			}
-			counter += 1;
+			//添加分割符号
+			modified.append("\n====================================================\n");
 		}
 		return modified.toString();
 	}
