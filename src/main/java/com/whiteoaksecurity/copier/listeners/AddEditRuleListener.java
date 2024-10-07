@@ -41,7 +41,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 
 			JLabel enabledBase64Label = new JLabel("Enabled Base64:");
 			JCheckBox enabledBase64 = new JCheckBox();
-			enabledBase64.setSelected(true);
+			enabledBase64.setSelected(false);
 			JLabel locationLabel = new JLabel("Location:");
 			JComboBox locations = new JComboBox(model.getLocations());
 			locations.setMaximumSize(locations.getPreferredSize());
@@ -54,7 +54,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			regex.setSelected(true);
 			JLabel storeLocateLabel = new JLabel("Store Locate:");
 			JCheckBox storeLocate = new JCheckBox();
-			storeLocate.setSelected(false);
+			storeLocate.setSelected(true);
 			JLabel commentLabel = new JLabel("Comment:");
 			JTextField commentField = new JTextField(20);
 

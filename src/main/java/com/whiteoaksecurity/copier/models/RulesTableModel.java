@@ -9,7 +9,7 @@ import javax.swing.table.AbstractTableModel;
 public class RulesTableModel extends AbstractTableModel {
 	
 	String ruleType = "Rule";
-	private final String[] columnNames = {"EnabledBase64", "Location", "Match", "Replace", "Type", "Case Sensitive", "Comment"};
+	private final String[] columnNames = {"EnabledBase64", "Location", "Match", "Replace", "Type", "StoreLocate", "Comment"};
 	String[] locations;
 	private ArrayList<Rule> data = new ArrayList<>();
 
