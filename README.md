@@ -14,5 +14,6 @@ Download and import the CopyProfiles.json file in the examples directory to see 
 
 2、修改 Location 的 意思为 所需要复制的部位，而不是修改的地方【最好是参考 Case Sensitive 增加框, 用于选择是否只保留指定位置的数据】
 
-3、修改 Case Sensitive 勾选框为 Base64 Encode , 用于确定是否对项目内容进行编码
+3、修改 Enable 勾选框为Base64 Encode , 用于确定是否对项目内容进行编码
+4、修改 Case Sensitive 勾选框为 OnlyCOpyLocate , 用于确定是否对项目内容进行编码
 

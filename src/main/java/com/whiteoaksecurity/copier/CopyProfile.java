@@ -586,4 +586,43 @@ public class CopyProfile {
 		
 		return modified;
 	}
+
+	public String copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse) {
+		StringBuilder copyBuffer = new StringBuilder();
+		if (copyRequest) {
+			copyBuffer.append(new String(httpRequestResponse.request().toByteArray().getBytes(), StandardCharsets.UTF_8));
+		}
+
+		if (copyRequest && copyResponse) {
+			if (httpRequestResponse.request().body().length() > 0) {
+				copyBuffer.append("\n\n");
+			}
+		}
+
+		if (copyResponse) {
+			copyBuffer.append(new String(httpRequestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8));
+		}
+
+		return copyBuffer.toString();
+	}
+
+	/**
+	 * 获取指定部位的数据
+	 * @return
+	 */
+	public String copyLocateDate(List<HttpRequestResponse> httpRequestResponses, boolean copyRequest, boolean copyResponse) {
+		StringBuilder modified = new StringBuilder();
+
+		int counter = 1; //计数，用于判断是否在最后添加数据
+		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
+			modified.append(copyLocateDate(httpRequestResponse, copyRequest, copyResponse));
+
+			//添加末尾分隔符
+			if (counter != httpRequestResponses.size()) {
+				modified.append("\n\n\n");
+			}
+			counter += 1;
+		}
+		return modified.toString();
+	}
 }

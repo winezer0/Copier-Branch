@@ -7,7 +7,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class CopyContentMenuListener implements ActionListener {
@@ -26,40 +25,27 @@ public class CopyContentMenuListener implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
-		StringBuilder copyBuffer = new StringBuilder();
-		
-		int counter = 1;
-		ArrayList<HttpRequestResponse> requestResponses = new ArrayList<>();
-		
+
+		//整理所有选中的消息
+		ArrayList<HttpRequestResponse> selectedRequestResponses = new ArrayList<>();
+
+		//选中Proxy列表的多条消息
 		if (!this.contextEvent.selectedRequestResponses().isEmpty()) {
-			requestResponses.addAll(this.profile.replace(this.contextEvent.selectedRequestResponses(), this.copyRequest, this.copyResponse));
-		} else if (!this.contextEvent.messageEditorRequestResponse().isEmpty()) {
-			requestResponses.add(this.profile.replace(this.contextEvent.messageEditorRequestResponse().get().requestResponse(), this.copyRequest, this.copyResponse));
+			selectedRequestResponses.addAll(this.contextEvent.selectedRequestResponses());
 		}
-		
-		for (HttpRequestResponse httpRequestResponse : requestResponses) {
-			if (this.copyRequest) {
-				copyBuffer.append(new String(httpRequestResponse.request().toByteArray().getBytes(), StandardCharsets.UTF_8));
-			}
-			
-			if (this.copyRequest && this.copyResponse) {
-				if (httpRequestResponse.request().body().length() > 0) {
-					copyBuffer.append("\n\n");
-				}
-			}
-			
-			if (this.copyResponse) {
-				copyBuffer.append(new String(httpRequestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8));
-			}
-			
-			if (counter != requestResponses.size()) {
-				copyBuffer.append("\n\n\n");
-			}
-			
-			counter += 1;
+		//选中编辑框的消息
+		else if (!this.contextEvent.messageEditorRequestResponse().isEmpty()) {
+			//选中编辑框的消息
+			HttpRequestResponse httpRequestResponse = this.contextEvent.messageEditorRequestResponse().get().requestResponse();
+			selectedRequestResponses.add(httpRequestResponse);
 		}
-		
-		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(copyBuffer.toString()), null);
+
+		//根据规则进行替换处理
+		ArrayList<HttpRequestResponse> handledRequestResponses = this.profile.replace(selectedRequestResponses, this.copyRequest, this.copyResponse);
+
+		//根据规则进行位置提取
+		String copyBuffer = this.profile.copyLocateDate(handledRequestResponses, this.copyRequest, this.copyResponse);
+		Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(copyBuffer), null);
 	}
 
 }
