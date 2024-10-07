@@ -586,7 +586,8 @@ public class CopyProfile {
 	public String copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse) {
 		StringBuilder copyBuffer = new StringBuilder();
 		if (copyRequest) {
-			copyBuffer.append(new String(httpRequestResponse.request().toByteArray().getBytes(), StandardCharsets.UTF_8));
+			String requestString = new String(httpRequestResponse.request().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			copyBuffer.append(requestString);
 		}
 
 		if (copyRequest && copyResponse) {
@@ -596,7 +597,8 @@ public class CopyProfile {
 		}
 
 		if (copyResponse) {
-			copyBuffer.append(new String(httpRequestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8));
+			String responseString = new String(httpRequestResponse.response().toByteArray().getBytes(), StandardCharsets.UTF_8);
+			copyBuffer.append(responseString);
 		}
 
 		return copyBuffer.toString();
