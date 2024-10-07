@@ -570,17 +570,17 @@ public class Copier implements BurpExtension {
 	public static void resizeColumnWidth(JTable table) {
 		TableColumnModel columnModel = table.getColumnModel();
 		// EnabledBase64 Column
-		columnModel.getColumn(0).sizeWidthToFit();
+		columnModel.getColumn(0).setPreferredWidth(100);
 		columnModel.getColumn(0).setResizable(false);
-		
+
 		// Location Column
-		columnModel.getColumn(1).setPreferredWidth(175);
+		columnModel.getColumn(1).setPreferredWidth(150);
 		
 		// Match Column
-		columnModel.getColumn(2).setPreferredWidth(200);
+		columnModel.getColumn(2).setPreferredWidth(150);
 		
 		// Replace Column
-		columnModel.getColumn(3).setPreferredWidth(200);
+		columnModel.getColumn(3).setPreferredWidth(150);
 		
 		// Type Column
 		columnModel.getColumn(4).setPreferredWidth(columnModel.getColumn(0).getPreferredWidth());
@@ -590,7 +590,7 @@ public class Copier implements BurpExtension {
 		columnModel.getColumn(4).setCellRenderer(centerRenderer);
 		
 		// Case Sensitive Column
-		columnModel.getColumn(5).setPreferredWidth(115);
+		columnModel.getColumn(5).setPreferredWidth(100);
 		columnModel.getColumn(5).setResizable(false);
 		
 		// Comment Column
