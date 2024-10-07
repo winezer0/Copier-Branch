@@ -594,7 +594,7 @@ public class CopyProfile {
 
 	public Map<String, String> copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
 		// 创建一个 Map 对象来存储键值对
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new HashMap<>();
 
 		String requestString = NONE_REQUEST_STRING;
 		String responseString = NONE_RESPONSE_STRING;

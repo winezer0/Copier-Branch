@@ -8,9 +8,15 @@ This allows requests and responses to be easily copied into reports without edit
 
 Download and import the CopyProfiles.json file in the examples directory to see some recommended default copy profiles & rules!
 
-# TODO
 
-1、允许正则替换内容框为空  OK
-2、修改 Location 的 意思为 所需要复制的部位，而不是修改的地方【修改Case Sensitive框实现, 用于选择是否只保留指定位置的数据】 
-3、修改 Case Sensitive 勾选框为 StoreLocate , 用于确定是否仅提取指定部分的数据 而不是全文复制 OK
-4、修改 Enable 勾选框为Base64 Encode , 用于确定是否对项目内容进行编码  
+## 修改功能
+
+1、允许正则替换内容框为空
+
+2、修改 Case Sensitive 勾选框为 StoreLocate 勾选框为, 用于确定是否仅提取Location部分的数据 而不是全文复制 
+
+3、修改 Enable 勾选框为 Base64 Encode , 用于确定是否对 报文内容 进行 Base64 编码
+
+注意：任意请求|响应规则中调用 Base64编码后, 最终输出结果是Json格式，否则就是文本格式
+
+注意：对于存在多条规则的情况下，所有规则都参与替换，且仅调用最后一条规则用于位置提取，
