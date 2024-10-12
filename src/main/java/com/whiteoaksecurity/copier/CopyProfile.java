@@ -28,8 +28,8 @@ public class CopyProfile {
 
 	public static final String RESPONSE_STRING = "responseString";
 	public static final String REQUEST_STRING = "requestString";
-	public static final String NONE_REQUEST_STRING = "No Request String";
-	public static final String NONE_RESPONSE_STRING = "No response String";
+	public static final String NONE_REQUEST = "NO REQUEST";
+	public static final String NONE_RESPONSE = "NO RESPONSE";
 
 	@JsonCreator
 	public CopyProfile(@JsonProperty("name") String name) {
@@ -596,8 +596,8 @@ public class CopyProfile {
 		// 创建一个 Map 对象来存储键值对
 		Map<String, String> map = new HashMap<>();
 
-		String requestString = NONE_REQUEST_STRING;
-		String responseString = NONE_RESPONSE_STRING;
+		String requestString = NONE_REQUEST;
+		String responseString = NONE_RESPONSE;
 
 		if (copyRequest) {
 			HttpRequest httpRequest = httpRequestResponse.request();
@@ -639,7 +639,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!requestString.isEmpty() && !NONE_REQUEST_STRING.equals(requestString) && requestRule.isEnabledBase64()){
+			if (!requestString.isEmpty() && !NONE_REQUEST.equals(requestString) && requestRule.isEnabledBase64()){
 				requestString = base64EncodeString(requestString);
 			}
 
@@ -685,7 +685,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!responseString.isEmpty() && !NONE_REQUEST_STRING.equals(responseString) && responseRule.isEnabledBase64()){
+			if (!responseString.isEmpty() && !NONE_REQUEST.equals(responseString) && responseRule.isEnabledBase64()){
 				responseString = base64EncodeString(responseString);
 			}
 

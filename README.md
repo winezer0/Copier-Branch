@@ -19,4 +19,4 @@ Download and import the CopyProfiles.json file in the examples directory to see 
 
 注意：任意请求|响应规则中调用 Base64编码后, 最终输出结果是Json格式，否则就是文本格式
 
-注意：对于存在多条规则的情况下，所有规则都参与替换，且仅调用最后一条规则用于位置提取，
+注意：对于存在多条规则的情况下，所有规则都参与替换，且仅调用最后一条规则用于位置提取.
