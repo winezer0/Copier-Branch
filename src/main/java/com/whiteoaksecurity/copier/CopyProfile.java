@@ -592,7 +592,8 @@ public class CopyProfile {
 		return modified;
 	}
 
-	public Map<String, String> copyLocateDate(HttpRequestResponse httpRequestResponse, boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
+	public Map<String, String> copyLocateDate(HttpRequestResponse httpRequestResponse,
+											  boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
 		// 创建一个 Map 对象来存储键值对
 		Map<String, String> map = new LinkedHashMap<>();
 
@@ -605,7 +606,7 @@ public class CopyProfile {
 				//默认返回全文
 				requestString = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
 				//勾选只保存已选定的位置,只保留指定的位置的数据
-				if (requestRule.isStoreLocate()){
+				if (requestRule != null && requestRule.isStoreLocate()){
 					try {
 						switch (requestRule.getLocation()) {
 							// Request 保留全部请求体
@@ -659,7 +660,7 @@ public class CopyProfile {
 			if (httpResponse != null){
 				//默认返回全文
 				responseString = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
-				if (responseRule.isStoreLocate()){
+				if (responseRule != null && responseRule.isStoreLocate()){
 					try {
 						switch (responseRule.getLocation()) {
 							// Response
@@ -733,6 +734,7 @@ public class CopyProfile {
 
 		//copy替换功能只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
 		ArrayList<Rule> requestRules = this.getRequestRulesTableModel().getData();
+
 		Rule requestRule = null;
 		if (requestRules.size() > 0){
 			requestRule = requestRules.get(requestRules.size() - 1);
