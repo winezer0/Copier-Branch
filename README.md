@@ -24,8 +24,8 @@ switch (requestRule.getLocation()) {
 ```
 
 
-3、增加 EnabledBase64 勾选框, 用于确定是否对报文内容进行Base64编码
+4、增加 EnabledBase64 勾选框, 用于确定是否对报文内容进行Base64编码
 
-4、增加 jsonFormat 勾选框 , 用于确定是否输出Json格式的结果
+5、增加 jsonFormat 勾选框 , 用于确定是否输出Json格式的结果
 
 注意：对于存在多条规则的情况下，所有规则都参与替换，但是且仅调用最后一条规则用于位置提取.
