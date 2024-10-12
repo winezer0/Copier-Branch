@@ -8,7 +8,7 @@ Copier 原项目地址 请访问 https://github.com/Tib3rius/Copier
 
 ## TODO
 
-删除规则内容后 UI表单没有自动更新
+删除规则内容|删除配置文件 后 UI表单和数据实际没有更新 原版本就存在的BUG 简单测试暂时没有解决
 
 ## 修改功能
 
