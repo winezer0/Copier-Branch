@@ -96,12 +96,9 @@ public class CopyProfile {
 		ArrayList<HttpRequestResponse> modified = new ArrayList<>();
 
 		//请求修改规则
-		ArrayList<Rule> requestRules = this.getRequestRulesTableModel().getData();
-		ArrayList<Rule> requestReplaceRules = getReplaceRules(requestRules);
+		ArrayList<Rule> requestReplaceRules = getReplaceRules(this.getRequestRulesTableModel().getData());
 		//响应修改规则
-		ArrayList<Rule> responseRules = this.getResponseRulesTableModel().getData();
-		ArrayList<Rule> responseReplaceRules = getReplaceRules(responseRules);
-
+		ArrayList<Rule> responseReplaceRules = getReplaceRules(this.getResponseRulesTableModel().getData());
 
 		for (HttpRequestResponse httpRequestResponse : requestResponses) {
 
@@ -739,18 +736,18 @@ public class CopyProfile {
 		StringBuilder modified = new StringBuilder();
 
 		//copy替换功能目前只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
-		ArrayList<Rule> allRequestRules = this.getRequestRulesTableModel().getData();
-		Rule requestRule = getLocateRule(allRequestRules, "注意: 存在多条提取规则, 使用最后1条用于位置提取: %s");
+		ArrayList<Rule> requestLocateRules = getLocateRules(this.getRequestRulesTableModel().getData());
+		Rule requestLocateRule = getLocateRule(requestLocateRules, "注意: 存在多条提取规则, 使用最后1条用于位置提取: %s");
 
 		//响应数据规则
-		ArrayList<Rule> responseRules = this.getResponseRulesTableModel().getData();
-		Rule responseRule = getLocateRule(responseRules, "注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s");
+		ArrayList<Rule> responseLocateRules = getLocateRules(this.getResponseRulesTableModel().getData());
+		Rule responseLocateRule = getLocateRule(responseLocateRules, "注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s");
 
 		//分析是否调用Json格式输出
-		Boolean useJsonFormat = responseRule.isJsonFormat() || requestRule.isJsonFormat();
+		Boolean useJsonFormat = responseLocateRule.isJsonFormat() || requestLocateRule.isJsonFormat();
 
 		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
-			Map<String, String> copyLocateDate = copyLocateDate(httpRequestResponse, copyRequest, copyResponse, requestRule, responseRule);
+			Map<String, String> copyLocateDate = copyLocateDate(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
 
 			if (!useJsonFormat){
 				//常规的字符串格式保存
@@ -776,21 +773,24 @@ public class CopyProfile {
 		return modified.toString();
 	}
 
-	private Rule getLocateRule(ArrayList<Rule> rules, String tip) {
+	private Rule getLocateRule(ArrayList<Rule> locateRules, String tip) {
+		Rule locateRule = null;
+		if (locateRules.size() > 0){
+			locateRule = locateRules.get(locateRules.size() - 1);
+			if (locateRules.size() > 1){System.out.println(String.format(tip, locateRule.toString()));}
+		}
+		return locateRule;
+	}
+
+	private ArrayList<Rule> getLocateRules(ArrayList<Rule> rules) {
 		//从所有规则中找到 开启了提取功能的规则
-		ArrayList<Rule> locateRequestRules = new ArrayList<>();
+		ArrayList<Rule> locateRules = new ArrayList<>();
 		for(Rule rule : rules){
 			if (rule.isStoreLocate()){
-				locateRequestRules.add(rule);
+				locateRules.add(rule);
 			}
 		}
-
-		Rule requestRule = null;
-		if (locateRequestRules.size() > 0){
-			requestRule = locateRequestRules.get(locateRequestRules.size() - 1);
-			if (locateRequestRules.size() > 1){System.out.println(String.format(tip, requestRule.toString()));}
-		}
-		return requestRule;
+		return locateRules;
 	}
 
 	private ArrayList<Rule> getReplaceRules(ArrayList<Rule> rules) {
