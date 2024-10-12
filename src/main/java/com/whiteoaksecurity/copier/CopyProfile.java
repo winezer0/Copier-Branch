@@ -18,6 +18,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static com.whiteoaksecurity.copier.utils.*;
+
+
 public class CopyProfile {
 
 	private String name;
@@ -25,10 +28,6 @@ public class CopyProfile {
 	private ResponseRulesTableModel responseRulesTableModel;
 	private boolean updateRequestContentLength = false;
 	private boolean updateResponseContentLength = false;
-
-	public static final String RESPONSE_STRING = "responseString";
-	public static final String REQUEST_STRING = "requestString";
-	public static final String NONE_CONTENT = "NONE CONTENT";
 
 	@JsonCreator
 	public CopyProfile(@JsonProperty("name") String name) {
@@ -594,6 +593,11 @@ public class CopyProfile {
 		return modified;
 	}
 
+
+	public static final String RESPONSE_STRING = "responseString";
+	public static final String REQUEST_STRING = "requestString";
+	public static final String NONE_CONTENT = "NONE CONTENT";
+
 	public Map<String, String> copyLocateDateSimple(HttpRequestResponse httpRequestResponse,
 													boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
 		// 创建一个 Map 对象来存储键值对
@@ -644,7 +648,7 @@ public class CopyProfile {
 							}
 						}
 					} catch (IndexOutOfBoundsException ex) {
-						Logger.getLogger().logToError("根据规则提取请求信息发生错误: " + ex.getMessage());
+						Logger.getLogger().logToError(String.format("根据规则[%s]提取请求信息发生错误: [%s]", requestRule.toString(requestRulesTableModel.getLocations()), ex.getMessage()));
 					}
 				}
 			}
@@ -696,7 +700,7 @@ public class CopyProfile {
 							}
 						}
 					} catch (IndexOutOfBoundsException ex) {
-						Logger.getLogger().logToError("根据规则提取响应信息发生错误: " + ex.getMessage());
+						Logger.getLogger().logToError(String.format("根据规则[%s]提取响应信息发生错误: [%s]", responseRule.toString(responseRulesTableModel.getLocations()), ex.getMessage()));
 					}
 				}
 			}
@@ -709,30 +713,137 @@ public class CopyProfile {
 		return map;
 	}
 
-	/**
-	 * 根据当前的规则值和字符串内容 判断是否需要进行base64编码
-	 * @param string 需要编码的字符串
-	 * @param noneContent 代表空值的常量
-	 * @param enabledBase64 是否需要编码
-	 * @return
-	 */
-	private String base64EncodeStrWithCheck(String string, String noneContent, boolean enabledBase64) {
-		if (!string.isEmpty() && !noneContent.equals(string) && enabledBase64){
-			string = base64EncodeStr(string);
-		}
-		return string;
-	}
 
-	/**
-	 * 进行base64编码字符串
-	 * @return
-	 */
-	private String base64EncodeStr(String string) {
-		// 将字符串转换为字节数组
-		byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
-		// 使用 Base64 进行编码
-		String encodedString = Base64.getEncoder().encodeToString(bytes);
-		return encodedString;
+	private Map<String, String> copyLocateDateJson(HttpRequestResponse httpRequestResponse,
+												   boolean copyRequest, boolean copyResponse, ArrayList<Rule> requestLocateRules, ArrayList<Rule> responseLocateRules) {
+		// 创建一个 Map 对象来存储键值对
+		Map<String, String> map = new LinkedHashMap<>();
+
+		if (copyRequest) {
+			HttpRequest httpRequest = httpRequestResponse.request();
+			if (httpRequest != null){
+				//默认返回全文 不需要编码的全文
+				if(requestLocateRules == null || requestLocateRules.isEmpty()){
+					String requestAll = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
+					requestAll = base64EncodeStrWithCheck(requestAll, NONE_CONTENT, false);
+					map.put("requestAll", requestAll);
+				}
+				else { //保留指定的部位的数据
+					for (Rule requestRule: requestLocateRules) {
+						try {
+							switch (requestRule.getLocation()) {
+								case 0 -> {
+									// Request 保留全部请求体
+									String requestAll = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
+									requestAll = base64EncodeStrWithCheck(requestAll, NONE_CONTENT, requestRule.isEnabledBase64());
+									map.put("requestAll", requestAll);
+									break;
+								}
+								// Request line 保留请求行
+								case 1 -> {
+									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+									String requestLine = entireRequestAsArray[0];
+									requestLine = base64EncodeStrWithCheck(requestLine, NONE_CONTENT, requestRule.isEnabledBase64());
+									map.put("requestLine", requestLine);
+									break;
+								}
+								// Request Headers 请求头
+								case 5 -> {
+									String requestHeaders = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
+									requestHeaders = base64EncodeStrWithCheck(requestHeaders, NONE_CONTENT, requestRule.isEnabledBase64());
+									map.put("requestHeaders", requestHeaders);
+									break;
+								}
+								// Request Body 请求体
+								case 9 -> {
+									String requestBody = httpRequest.bodyToString();
+									requestBody = base64EncodeStrWithCheck(requestBody, NONE_CONTENT, requestRule.isEnabledBase64());
+									map.put("requestBody", requestBody);
+									break;
+								}
+								default -> {
+									System.out.println("提示：该选项未精确实现, 返回请求行+请求体 ...");
+									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+									String requestLine = entireRequestAsArray[0];
+									String requestBody = httpRequest.bodyToString();
+									map.put("requestLine", requestLine);
+									map.put("requestBody", requestBody);
+									break;
+								}
+							}
+						} catch (IndexOutOfBoundsException ex) {
+							Logger.getLogger().logToError(String.format("根据规则[%s]提取请求信息发生错误: [%s]", requestRule.toString(requestRulesTableModel.getLocations()), ex.getMessage()));
+
+						}
+					}
+
+				}
+			}
+		}
+
+		if (copyResponse) {
+			HttpResponse httpResponse = httpRequestResponse.response();
+			if (httpResponse != null){
+				//默认返回全文 不需要编码的全文
+				if(responseLocateRules == null || responseLocateRules.isEmpty()){
+					String responseAll = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
+					responseAll = base64EncodeStrWithCheck(responseAll, NONE_CONTENT, false);
+					map.put("responseAll", responseAll);
+				}
+				else { //保留指定的部位的数据
+					for (Rule responseRule: responseLocateRules) {
+						try {
+							switch (responseRule.getLocation()) {
+								// Response
+								case 0 -> {
+									String responseAll = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
+									responseAll = base64EncodeStrWithCheck(responseAll, NONE_CONTENT, responseRule.isEnabledBase64());
+									map.put("responseAll", responseAll);
+									break;
+								}
+								// Response Status Line 响应状态行
+								case 1 -> {
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									String responseLine = entireResponseAsArray[0];
+									responseLine = base64EncodeStrWithCheck(responseLine, NONE_CONTENT, responseRule.isEnabledBase64());
+									map.put("responseLine", responseLine);
+									break;
+								}
+								// Response Headers
+								case 2 -> {
+									String responseHeaders = httpResponse.toByteArray().toString().substring(0, httpResponse.bodyOffset());
+									responseHeaders = base64EncodeStrWithCheck(responseHeaders, NONE_CONTENT, responseRule.isEnabledBase64());
+									map.put("responseHeaders", responseHeaders);
+									break;
+								}
+								// Response Body
+								case 6 -> {
+									String responseBody = httpResponse.bodyToString();
+									responseBody = base64EncodeStrWithCheck(responseBody, NONE_CONTENT, responseRule.isEnabledBase64());
+									map.put("responseBody", responseBody);
+									break;
+								}
+
+								default -> {
+									System.out.println("提示：该选项未精确实现, 返回响应行+响应体 ...");
+									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+									String responseLine = entireResponseAsArray[0];
+									String responseBody = httpResponse.bodyToString();
+									map.put("responseLine", responseLine);
+									map.put("responseBody", responseBody);
+									break;
+								}
+							}
+						} catch (IndexOutOfBoundsException ex) {
+							Logger.getLogger().logToError(String.format("根据规则[%s]提取响应信息发生错误: [%s]", responseRule.toString(responseRulesTableModel.getLocations()), ex.getMessage()));
+						}
+					}
+				}
+			}
+
+		}
+
+		return map;
 	}
 
 
@@ -745,90 +856,40 @@ public class CopyProfile {
 
 		//copy替换功能目前只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
 		ArrayList<Rule> requestLocateRules = getLocateRules(this.getRequestRulesTableModel().getData());
-		Rule requestLocateRule = getLocateRule(requestLocateRules, "注意: 存在多条提取规则, 使用最后1条用于位置提取: %s");
-
-		//响应数据规则
 		ArrayList<Rule> responseLocateRules = getLocateRules(this.getResponseRulesTableModel().getData());
-		Rule responseLocateRule = getLocateRule(responseLocateRules, "注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s");
 
 		//分析是否调用Json格式输出
-		Boolean isJsonMode = checkUseJsonFormat(requestLocateRules, responseLocateRules);
+		Boolean isJsonMode = checkUseJsonFormat(listAddList(requestLocateRules, responseLocateRules));
+		System.out.println("Current is Json Mode: " + isJsonMode);
 
-		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
+		if (!isJsonMode){
+			//常规的字符串格式保存
+			//System.out.println("注意: 当前Text模式 仅使用最后1条规则用于请求|响应位置提取");
+			Rule requestLocateRule = getLocateRule(requestLocateRules);
+			Rule responseLocateRule = getLocateRule(responseLocateRules);
 
-			if (!isJsonMode){
-				//常规的字符串格式保存
+			for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
 				Map<String, String> copyLocateDateSimple = copyLocateDateSimple(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
 				StringBuilder copyBuffer = new StringBuilder();
 				if (copyRequest) { copyBuffer.append(copyLocateDateSimple.get(REQUEST_STRING)); }
 				if (copyRequest && copyResponse) { copyBuffer.append("\n\n"); }
 				if (copyResponse) { copyBuffer.append(copyLocateDateSimple.get(RESPONSE_STRING)); }
-				modified.append(copyBuffer);
-			} else {
-				//Json格式保存 应当支持更多复杂的内容
-				Map<String, String> copyLocateDateJson = copyLocateDateSimple(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
+				modified.append(copyBuffer).append("\n====================================================\n");
+			}
+		} else {
+			//Json格式保存 应当支持更多复杂的内容
+			for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
+				Map<String, String> copyLocateDateJson = copyLocateDateJson(httpRequestResponse, copyRequest, copyResponse, requestLocateRules, responseLocateRules);
 				String jsonString = null;
 				try {
 					jsonString = new ObjectMapper().writeValueAsString(copyLocateDateJson);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}
-				modified.append(jsonString);
+				modified.append(jsonString).append("\n====================================================\n");
 			}
-			//添加分割符号
-			modified.append("\n====================================================\n");
 		}
+
 		return modified.toString();
 	}
-
-	//	检查是否存在提取规则
-	private Boolean checkUseJsonFormat(ArrayList<Rule> requestLocateRules, ArrayList<Rule> responseLocateRules) {
-		for (Rule rule:requestLocateRules){
-			if (rule.isEnabledBase64()){
-				return true;
-			}
-		}
-
-		for (Rule rule:responseLocateRules){
-			if (rule.isEnabledBase64()){
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-
-	//从所有规则中找到 开启非提取功能的规则
-	private ArrayList<Rule> getReplaceRules(ArrayList<Rule> rules) {
-		ArrayList<Rule> replaceRules = new ArrayList<>();
-		for(Rule rule : rules){
-			if (!rule.isStoreLocate()){
-				replaceRules.add(rule);
-			}
-		}
-		return replaceRules;
-	}
-
-	//从所有规则中找到 开启了提取功能的规则
-	private ArrayList<Rule> getLocateRules(ArrayList<Rule> rules) {
-		ArrayList<Rule> locateRules = new ArrayList<>();
-		for(Rule rule : rules){
-			if (rule.isStoreLocate()){
-				locateRules.add(rule);
-			}
-		}
-		return locateRules;
-	}
-
-	//从所有提取规则中获取最后一条规则
-	private Rule getLocateRule(ArrayList<Rule> locateRules, String tip) {
-		Rule locateRule = null;
-		if (locateRules.size() > 0){
-			locateRule = locateRules.get(locateRules.size() - 1);
-			if (locateRules.size() > 1){System.out.println(String.format(tip, locateRule.toString()));}
-		}
-		return locateRule;
-	}
-
 }

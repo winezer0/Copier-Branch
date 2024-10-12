@@ -93,6 +93,10 @@ public class Rule {
 	public String toString(String[] locations) {
 		return locations[this.location] + ": " + this.match + " -> " + this.replace;
 	}
+
+	public String toString() {
+		return this.location + ": " + this.match + " -> " + this.replace;
+	}
 	
 	public void setIsEnabledBase64(boolean enabledBase64) {
 		this.enabledBase64 = enabledBase64;
