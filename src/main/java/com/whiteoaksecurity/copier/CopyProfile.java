@@ -608,6 +608,10 @@ public class CopyProfile {
 				if (requestRule.isStoreLocate()){
 					try {
 						switch (requestRule.getLocation()) {
+							// Request 保留全部请求体
+							case 0 -> {
+								break;
+							}
 							// Request line 保留请求行
 							case 1 -> {
 								String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
@@ -628,7 +632,11 @@ public class CopyProfile {
 								break;
 							}
 							default -> {
-								System.out.println("提示：该选项不适用, 返回请求全文 ...");
+								System.out.println("提示：该选项未精确实现, 返回请求行+请求体 ...");
+								String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+								String requestLine = entireRequestAsArray[0];
+								String requestBody = httpRequest.bodyToString();
+								requestString = (requestLine + "\n" + requestBody).trim();
 								break;
 							}
 						}
@@ -654,6 +662,10 @@ public class CopyProfile {
 				if (responseRule.isStoreLocate()){
 					try {
 						switch (responseRule.getLocation()) {
+							// Response
+							case 0 -> {
+								break;
+							}
 							// Response Status Line 响应状态行
 							case 1 -> {
 								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
@@ -674,7 +686,11 @@ public class CopyProfile {
 							}
 
 							default -> {
-								System.out.println("提示：该选项不适用, 返回响应全文 ...");
+								System.out.println("提示：该选项未精确实现, 返回响应行+响应体 ...");
+								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+								String responseLine = entireResponseAsArray[0];
+								String responseBody = httpResponse.bodyToString();
+								responseString = (responseLine + "\n" + responseBody).trim();
 								break;
 							}
 						}
