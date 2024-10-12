@@ -22,6 +22,10 @@ import static com.whiteoaksecurity.copier.utils.*;
 
 
 public class CopyProfile {
+	public static final String REQUEST_DATA = "requestData";
+	public static final String RESPONSE_DATA = "responseData";
+	public static final String NONE_CONTENT = "NONE CONTENT";
+	public static final String SPILT = "\r\n\r\n";
 
 	private String name;
 	private RequestRulesTableModel requestRulesTableModel;
@@ -126,30 +130,27 @@ public class CopyProfile {
 			if (replaceRequest) {
 				for (Rule requestRule : requestReplaceRules) {
 					try {
+						String entireRequest = httpRequest.toByteArray().toString();
 						switch (requestRule.getLocation()) {
 							// Entire Request
 							case 0 -> {
-								String entireRequest = httpRequest.toByteArray().toString();
 								httpRequest = HttpRequest.httpRequest(httpRequest.httpService(), requestRule.getPattern().matcher(entireRequest).replaceAll(requestRule.getReplace()));
 								break;
 							}
 							// Request Line
 							case 1 -> {
-								String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+								String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
 								if (entireRequestAsArray.length > 0) {
 									entireRequestAsArray[0] = requestRule.getPattern().matcher(entireRequestAsArray[0]).replaceAll(requestRule.getReplace());
 								} else {
 									break;
 								}
 
-
-
 								httpRequest = HttpRequest.httpRequest(httpRequest.httpService(), String.join("\r\n", entireRequestAsArray));
 								break;
 							}
 							// Request URL Param
 							case 2 -> {
-								String entireRequest = httpRequest.toByteArray().toString();
 								List<ParsedHttpParameter> params = httpRequest.parameters();
 								List<HttpParameter> updatedParams = new ArrayList<>();
 								for (ParsedHttpParameter param : params) {
@@ -215,7 +216,17 @@ public class CopyProfile {
 							}
 							// Request Headers
 							case 5 -> {
-								String headers = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
+								String headers = "";
+								if (httpRequest.bodyOffset() > 0){
+									headers = entireRequest.substring(0, httpRequest.bodyOffset());
+								} else if (entireRequest.contains(SPILT)){
+									System.out.println(String.format("获取请求头发生错误: bodyOffset=[%s] 尝试切割方案获取请求头", httpRequest.bodyOffset()));
+										headers = entireRequest.split(SPILT,2)[0];
+								} else {
+										System.out.println("获取请求头发生错误: 当前不包含(换行*2)特征 跳过本次请求头替换");
+										break;
+								}
+
 								String linebreak = "\r\n";
 								if (!headers.contains(linebreak)) {
 									linebreak = "\n";
@@ -305,7 +316,6 @@ public class CopyProfile {
 							}
 							// Request Body Params
 							case 10 -> {
-								String entireRequest = httpRequest.toByteArray().toString();
 								List<ParsedHttpParameter> params = httpRequest.parameters();
 								List<HttpParameter> updatedParams = new ArrayList<>();
 								for (ParsedHttpParameter param : params) {
@@ -415,8 +425,10 @@ public class CopyProfile {
 					}
 				}
 
+
 				// Figure out what line breaks are used for headers.
-				String headersString = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8).substring(0, httpResponse.bodyOffset());
+				String entireResponseUTF8 = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
+				String headersString = entireResponseUTF8.substring(0, httpResponse.bodyOffset());
 				String linebreak = "\r\n";
 				if (!headersString.contains(linebreak)) {
 					linebreak = "\n";
@@ -424,16 +436,16 @@ public class CopyProfile {
 
 				for (Rule responseRule : responseReplaceRules) {
 					try {
+						entireResponseUTF8 = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
 						switch (responseRule.getLocation()) {
 							// Entire Response
 							case 0 -> {
-								String entireResponse = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
-								httpResponse = HttpResponse.httpResponse(responseRule.getPattern().matcher(entireResponse).replaceAll(responseRule.getReplace()));
+								httpResponse = HttpResponse.httpResponse(responseRule.getPattern().matcher(entireResponseUTF8).replaceAll(responseRule.getReplace()));
 								break;
 							}
 							// Response Status Line
 							case 1 -> {
-								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+								String[] entireResponseAsArray = entireResponseUTF8.lines().toList().toArray(new String[0]);
 								if (entireResponseAsArray.length > 0) {
 									entireResponseAsArray[0] = responseRule.getPattern().matcher(entireResponseAsArray[0]).replaceAll(responseRule.getReplace());
 								} else {
@@ -593,57 +605,50 @@ public class CopyProfile {
 		return modified;
 	}
 
-
-	public static final String RESPONSE_STRING = "responseString";
-	public static final String REQUEST_STRING = "requestString";
-	public static final String NONE_CONTENT = "NONE CONTENT";
-
 	public Map<String, String> copyLocateDateSimple(HttpRequestResponse httpRequestResponse,
-													boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
+													boolean copyRequest, boolean copyResponse,
+													Rule requestRule, Rule responseRule) {
 		// 创建一个 Map 对象来存储键值对
 		Map<String, String> map = new LinkedHashMap<>();
 
-		String requestString = NONE_CONTENT;
-		String responseString = NONE_CONTENT;
-
+		String requestReturn = NONE_CONTENT;
 		if (copyRequest) {
 			HttpRequest httpRequest = httpRequestResponse.request();
 			if (httpRequest != null){
 				//默认返回全文
-				requestString = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
+				requestReturn = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
 				//勾选只保存已选定的位置,只保留指定的位置的数据
 				if (requestRule != null && requestRule.isStoreLocate()){
 					try {
+						String entireRequest = httpRequest.toByteArray().toString();
 						switch (requestRule.getLocation()) {
 							// Request 保留全部请求体
 							case 0 -> {
+								//默认返回全文
 								break;
 							}
 							// Request line 保留请求行
 							case 1 -> {
-								String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
-								requestString = entireRequestAsArray[0];
-								if (entireRequestAsArray.length == 0) {
-									System.out.println("提示：没有找到请求行, 返回请求全文 ...");
-								}
+								String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
+								requestReturn = entireRequestAsArray[0];
 								break;
 							}
 							// Request Headers 请求头
 							case 5 -> {
-								requestString = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
+								requestReturn = getRequestHeaders(httpRequest);
 								break;
 							}
 							// Request Body 请求体
 							case 9 -> {
-								requestString = httpRequest.bodyToString();
+								requestReturn = httpRequest.bodyToString();
 								break;
 							}
 							default -> {
 								System.out.println("提示：该选项未精确实现, 返回请求行+请求体 ...");
-								String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+								String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
 								String requestLine = entireRequestAsArray[0];
 								String requestBody = httpRequest.bodyToString();
-								requestString = (requestLine + "\n" + requestBody).trim();
+								requestReturn = (requestLine + "\n" + requestBody).trim();
 								break;
 							}
 						}
@@ -654,48 +659,51 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			requestString = base64EncodeStrWithCheck(requestString, NONE_CONTENT, requestRule.isEnabledBase64());
+			requestReturn = base64EncodeStrWithCheck(requestReturn, requestRule.isEnabledBase64());
 
-			map.put(REQUEST_STRING, requestString);
+			map.put(REQUEST_DATA, requestReturn);
 		}
 
+		String responseReturn = NONE_CONTENT;
 		if (copyResponse) {
 			HttpResponse httpResponse = httpRequestResponse.response();
 			if (httpResponse != null){
+				//获取全部内容数据
+				String entireResponseUTF8 = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
 				//默认返回全文
-				responseString = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
+				responseReturn = entireResponseUTF8;
+
 				if (responseRule != null && responseRule.isStoreLocate()){
 					try {
 						switch (responseRule.getLocation()) {
 							// Response
 							case 0 -> {
+								//默认返回全文
 								break;
 							}
 							// Response Status Line 响应状态行
 							case 1 -> {
-								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
-								if (entireResponseAsArray.length > 0) {
-									responseString = entireResponseAsArray[0];
-								}
+								String[] entireResponseAsArray = entireResponseUTF8.lines().toList().toArray(new String[0]);
+								responseReturn = entireResponseAsArray[0];
 								break;
 							}
 							// Response Headers
 							case 2 -> {
-								responseString = httpResponse.toByteArray().toString().substring(0, httpResponse.bodyOffset());
+								responseReturn = getResponseHeaders(httpResponse);
 								break;
 							}
 							// Response Body
 							case 6 -> {
-								responseString = httpResponse.bodyToString();
+								responseReturn = httpResponse.bodyToString();
 								break;
 							}
 
 							default -> {
 								System.out.println("提示：该选项未精确实现, 返回响应行+响应体 ...");
-								String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
+								String[] entireResponseAsArray = entireResponseUTF8.lines().toList().toArray(new String[0]);
 								String responseLine = entireResponseAsArray[0];
 								String responseBody = httpResponse.bodyToString();
-								responseString = (responseLine + "\n" + responseBody).trim();
+								responseReturn = (responseLine + "\n" + responseBody).trim();
 								break;
 							}
 						}
@@ -706,8 +714,8 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			responseString = base64EncodeStrWithCheck(responseString, NONE_CONTENT, responseRule.isEnabledBase64());
-			map.put(RESPONSE_STRING, responseString);
+			responseReturn = base64EncodeStrWithCheck(responseReturn, responseRule.isEnabledBase64());
+			map.put(RESPONSE_DATA, responseReturn);
 		}
 
 		return map;
@@ -715,7 +723,9 @@ public class CopyProfile {
 
 
 	private Map<String, String> copyLocateDateJson(HttpRequestResponse httpRequestResponse,
-												   boolean copyRequest, boolean copyResponse, ArrayList<Rule> requestLocateRules, ArrayList<Rule> responseLocateRules) {
+												   boolean copyRequest, boolean copyResponse,
+												   ArrayList<Rule> requestLocateRules,
+												   ArrayList<Rule> responseLocateRules) {
 		// 创建一个 Map 对象来存储键值对
 		Map<String, String> map = new LinkedHashMap<>();
 
@@ -725,45 +735,46 @@ public class CopyProfile {
 				//默认返回全文 不需要编码的全文
 				if(requestLocateRules == null || requestLocateRules.isEmpty()){
 					String requestAll = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
-					requestAll = base64EncodeStrWithCheck(requestAll, NONE_CONTENT, false);
+					requestAll = base64EncodeStrWithCheck(requestAll, false);
 					map.put("requestAll", requestAll);
 				}
 				else { //保留指定的部位的数据
 					for (Rule requestRule: requestLocateRules) {
 						try {
+							final String entireRequest = httpRequest.toByteArray().toString();
 							switch (requestRule.getLocation()) {
 								case 0 -> {
 									// Request 保留全部请求体
 									String requestAll = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
-									requestAll = base64EncodeStrWithCheck(requestAll, NONE_CONTENT, requestRule.isEnabledBase64());
+									requestAll = base64EncodeStrWithCheck(requestAll, requestRule.isEnabledBase64());
 									map.put("requestAll", requestAll);
 									break;
 								}
 								// Request line 保留请求行
 								case 1 -> {
-									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+									String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
 									String requestLine = entireRequestAsArray[0];
-									requestLine = base64EncodeStrWithCheck(requestLine, NONE_CONTENT, requestRule.isEnabledBase64());
+									requestLine = base64EncodeStrWithCheck(requestLine, requestRule.isEnabledBase64());
 									map.put("requestLine", requestLine);
 									break;
 								}
 								// Request Headers 请求头
 								case 5 -> {
-									String requestHeaders = httpRequest.toByteArray().toString().substring(0, httpRequest.bodyOffset());
-									requestHeaders = base64EncodeStrWithCheck(requestHeaders, NONE_CONTENT, requestRule.isEnabledBase64());
+									String requestHeaders = getRequestHeaders(httpRequest);
+									requestHeaders = base64EncodeStrWithCheck(requestHeaders, requestRule.isEnabledBase64());
 									map.put("requestHeaders", requestHeaders);
 									break;
 								}
 								// Request Body 请求体
 								case 9 -> {
 									String requestBody = httpRequest.bodyToString();
-									requestBody = base64EncodeStrWithCheck(requestBody, NONE_CONTENT, requestRule.isEnabledBase64());
+									requestBody = base64EncodeStrWithCheck(requestBody, requestRule.isEnabledBase64());
 									map.put("requestBody", requestBody);
 									break;
 								}
 								default -> {
 									System.out.println("提示：该选项未精确实现, 返回请求行+请求体 ...");
-									String[] entireRequestAsArray = httpRequest.toByteArray().toString().lines().toList().toArray(new String[0]);
+									String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
 									String requestLine = entireRequestAsArray[0];
 									String requestBody = httpRequest.bodyToString();
 									map.put("requestLine", requestLine);
@@ -787,17 +798,19 @@ public class CopyProfile {
 				//默认返回全文 不需要编码的全文
 				if(responseLocateRules == null || responseLocateRules.isEmpty()){
 					String responseAll = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
-					responseAll = base64EncodeStrWithCheck(responseAll, NONE_CONTENT, false);
+					responseAll = base64EncodeStrWithCheck(responseAll, false);
 					map.put("responseAll", responseAll);
 				}
 				else { //保留指定的部位的数据
 					for (Rule responseRule: responseLocateRules) {
 						try {
+							String entireResponse = httpResponse.toByteArray().toString();
+
 							switch (responseRule.getLocation()) {
 								// Response
 								case 0 -> {
 									String responseAll = new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8);
-									responseAll = base64EncodeStrWithCheck(responseAll, NONE_CONTENT, responseRule.isEnabledBase64());
+									responseAll = base64EncodeStrWithCheck(responseAll, responseRule.isEnabledBase64());
 									map.put("responseAll", responseAll);
 									break;
 								}
@@ -805,21 +818,21 @@ public class CopyProfile {
 								case 1 -> {
 									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
 									String responseLine = entireResponseAsArray[0];
-									responseLine = base64EncodeStrWithCheck(responseLine, NONE_CONTENT, responseRule.isEnabledBase64());
+									responseLine = base64EncodeStrWithCheck(responseLine, responseRule.isEnabledBase64());
 									map.put("responseLine", responseLine);
 									break;
 								}
 								// Response Headers
 								case 2 -> {
-									String responseHeaders = httpResponse.toByteArray().toString().substring(0, httpResponse.bodyOffset());
-									responseHeaders = base64EncodeStrWithCheck(responseHeaders, NONE_CONTENT, responseRule.isEnabledBase64());
+									String responseHeaders = getResponseHeaders(httpResponse);
+									responseHeaders = base64EncodeStrWithCheck(responseHeaders, responseRule.isEnabledBase64());
 									map.put("responseHeaders", responseHeaders);
 									break;
 								}
 								// Response Body
 								case 6 -> {
 									String responseBody = httpResponse.bodyToString();
-									responseBody = base64EncodeStrWithCheck(responseBody, NONE_CONTENT, responseRule.isEnabledBase64());
+									responseBody = base64EncodeStrWithCheck(responseBody, responseRule.isEnabledBase64());
 									map.put("responseBody", responseBody);
 									break;
 								}
@@ -871,9 +884,9 @@ public class CopyProfile {
 			for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
 				Map<String, String> copyLocateDateSimple = copyLocateDateSimple(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
 				StringBuilder copyBuffer = new StringBuilder();
-				if (copyRequest) { copyBuffer.append(copyLocateDateSimple.get(REQUEST_STRING)); }
+				if (copyRequest) { copyBuffer.append(copyLocateDateSimple.get(REQUEST_DATA)); }
 				if (copyRequest && copyResponse) { copyBuffer.append("\n\n"); }
-				if (copyResponse) { copyBuffer.append(copyLocateDateSimple.get(RESPONSE_STRING)); }
+				if (copyResponse) { copyBuffer.append(copyLocateDateSimple.get(RESPONSE_DATA)); }
 				modified.append(copyBuffer).append("\n====================================================\n");
 			}
 		} else {

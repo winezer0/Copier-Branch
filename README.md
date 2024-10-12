@@ -6,6 +6,10 @@ Copier Burp扩展（兼容社区和专业版），允许用户轻松地复制请
 
 Copier 原项目地址 请访问 https://github.com/Tib3rius/Copier
 
+## TODO
+
+删除规则内容后 UI表单没有自动更新
+
 ## 修改功能
 
 1、允许正则替换内容框为空
