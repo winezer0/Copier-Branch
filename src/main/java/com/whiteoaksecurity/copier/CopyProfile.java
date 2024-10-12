@@ -28,8 +28,7 @@ public class CopyProfile {
 
 	public static final String RESPONSE_STRING = "responseString";
 	public static final String REQUEST_STRING = "requestString";
-	public static final String NONE_REQUEST = "NO REQUEST";
-	public static final String NONE_RESPONSE = "NO RESPONSE";
+	public static final String NONE_CONTENT = "NONE CONTENT";
 
 	@JsonCreator
 	public CopyProfile(@JsonProperty("name") String name) {
@@ -595,13 +594,13 @@ public class CopyProfile {
 		return modified;
 	}
 
-	public Map<String, String> copyLocateDate(HttpRequestResponse httpRequestResponse,
-											  boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
+	public Map<String, String> copyLocateDateSimple(HttpRequestResponse httpRequestResponse,
+													boolean copyRequest, boolean copyResponse, Rule requestRule, Rule responseRule) {
 		// 创建一个 Map 对象来存储键值对
 		Map<String, String> map = new LinkedHashMap<>();
 
-		String requestString = NONE_REQUEST;
-		String responseString = NONE_RESPONSE;
+		String requestString = NONE_CONTENT;
+		String responseString = NONE_CONTENT;
 
 		if (copyRequest) {
 			HttpRequest httpRequest = httpRequestResponse.request();
@@ -651,7 +650,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!requestString.isEmpty() && !NONE_REQUEST.equals(requestString) && requestRule.isEnabledBase64()){
+			if (!requestString.isEmpty() && !NONE_CONTENT.equals(requestString) && requestRule.isEnabledBase64()){
 				requestString = base64EncodeString(requestString);
 			}
 
@@ -705,7 +704,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!responseString.isEmpty() && !NONE_RESPONSE.equals(responseString) && responseRule.isEnabledBase64()){
+			if (!responseString.isEmpty() && !NONE_CONTENT.equals(responseString) && responseRule.isEnabledBase64()){
 				responseString = base64EncodeString(responseString);
 			}
 
@@ -744,24 +743,24 @@ public class CopyProfile {
 		Rule responseLocateRule = getLocateRule(responseLocateRules, "注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s");
 
 		//分析是否调用Json格式输出
-		Boolean useJsonFormat = responseLocateRule.isJsonFormat() || requestLocateRule.isJsonFormat();
+		Boolean isJsonMode = checkUseJsonFormat(requestLocateRules, responseLocateRules);
 
 		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
-			Map<String, String> copyLocateDate = copyLocateDate(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
 
-			if (!useJsonFormat){
+			if (!isJsonMode){
 				//常规的字符串格式保存
+				Map<String, String> copyLocateDateSimple = copyLocateDateSimple(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
 				StringBuilder copyBuffer = new StringBuilder();
-				if (copyRequest) { copyBuffer.append(copyLocateDate.get(REQUEST_STRING)); }
+				if (copyRequest) { copyBuffer.append(copyLocateDateSimple.get(REQUEST_STRING)); }
 				if (copyRequest && copyResponse) { copyBuffer.append("\n\n"); }
-				if (copyResponse) { copyBuffer.append(copyLocateDate.get(RESPONSE_STRING)); }
+				if (copyResponse) { copyBuffer.append(copyLocateDateSimple.get(RESPONSE_STRING)); }
 				modified.append(copyBuffer);
 			} else {
-				//Json格式保存
-				// 创建 Jackson ObjectMapper 实例
+				//Json格式保存 应当支持更多复杂的内容
+				Map<String, String> copyLocateDateJson = copyLocateDateSimple(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
 				String jsonString = null;
 				try {
-					jsonString = new ObjectMapper().writeValueAsString(copyLocateDate);
+					jsonString = new ObjectMapper().writeValueAsString(copyLocateDateJson);
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}
@@ -773,17 +772,37 @@ public class CopyProfile {
 		return modified.toString();
 	}
 
-	private Rule getLocateRule(ArrayList<Rule> locateRules, String tip) {
-		Rule locateRule = null;
-		if (locateRules.size() > 0){
-			locateRule = locateRules.get(locateRules.size() - 1);
-			if (locateRules.size() > 1){System.out.println(String.format(tip, locateRule.toString()));}
+	//	检查是否存在提取规则
+	private Boolean checkUseJsonFormat(ArrayList<Rule> requestLocateRules, ArrayList<Rule> responseLocateRules) {
+		for (Rule rule:requestLocateRules){
+			if (rule.isEnabledBase64()){
+				return true;
+			}
 		}
-		return locateRule;
+
+		for (Rule rule:responseLocateRules){
+			if (rule.isEnabledBase64()){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
+
+	//从所有规则中找到 开启非提取功能的规则
+	private ArrayList<Rule> getReplaceRules(ArrayList<Rule> rules) {
+		ArrayList<Rule> replaceRules = new ArrayList<>();
+		for(Rule rule : rules){
+			if (!rule.isStoreLocate()){
+				replaceRules.add(rule);
+			}
+		}
+		return replaceRules;
+	}
+
+	//从所有规则中找到 开启了提取功能的规则
 	private ArrayList<Rule> getLocateRules(ArrayList<Rule> rules) {
-		//从所有规则中找到 开启了提取功能的规则
 		ArrayList<Rule> locateRules = new ArrayList<>();
 		for(Rule rule : rules){
 			if (rule.isStoreLocate()){
@@ -793,14 +812,14 @@ public class CopyProfile {
 		return locateRules;
 	}
 
-	private ArrayList<Rule> getReplaceRules(ArrayList<Rule> rules) {
-		//从所有规则中找到 开启没有开启提取功能的规则
-		ArrayList<Rule> replaceRules = new ArrayList<>();
-		for(Rule rule : rules){
-			if (!rule.isStoreLocate()){
-				replaceRules.add(rule);
-			}
+	//从所有提取规则中获取最后一条规则
+	private Rule getLocateRule(ArrayList<Rule> locateRules, String tip) {
+		Rule locateRule = null;
+		if (locateRules.size() > 0){
+			locateRule = locateRules.get(locateRules.size() - 1);
+			if (locateRules.size() > 1){System.out.println(String.format(tip, locateRule.toString()));}
 		}
-		return replaceRules;
+		return locateRule;
 	}
+
 }
