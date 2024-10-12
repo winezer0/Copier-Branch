@@ -47,6 +47,10 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			JCheckBox storeLocate = new JCheckBox();
 			storeLocate.setSelected(true);
 
+			JLabel jsonFormatLabel = new JLabel("Json Format:");
+			JCheckBox jsonFormat = new JCheckBox();
+			jsonFormat.setSelected(false);
+
 			JLabel locationLabel = new JLabel("Location:");
 			JComboBox locations = new JComboBox(model.getLocations());
 			locations.setMaximumSize(locations.getPreferredSize());
@@ -76,6 +80,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					replaceField.setText(this.rule.getReplace());
 					regex.setSelected(this.rule.isRegex());
 					storeLocate.setSelected(this.rule.isStoreLocate());
+					jsonFormat.setSelected(this.rule.isJsonFormat());
 					commentField.setText(this.rule.getComment());
 				}
 			}
@@ -100,6 +105,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							this.rule = new Rule(
 								enabledBase64.isSelected(),
 								storeLocate.isSelected(),
+								jsonFormat.isSelected(),
 								locations.getSelectedIndex(),
 								matchField.getText(),
 								replaceField.getText(),
@@ -113,6 +119,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							this.rule.setReplace(replaceField.getText());
 							this.rule.setIsRegex(regex.isSelected());
 							this.rule.setIsStoreLocate(storeLocate.isSelected());
+							this.rule.setIsJsonFormat(jsonFormat.isSelected());
 							this.rule.setComment(commentField.getText());
 
 							// Do this last since we need to compile the pattern using potentially new flags.
@@ -144,6 +151,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledBase64Label)
 					.addComponent(storeLocateLabel)
+					.addComponent(jsonFormatLabel)
 					.addComponent(locationLabel)
 					.addComponent(matchLabel)
 					.addComponent(replaceLabel)
@@ -153,6 +161,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledBase64)
 					.addComponent(storeLocate)
+					.addComponent(jsonFormat)
 					.addComponent(locations)
 					.addComponent(matchField)
 					.addComponent(replaceField)
@@ -176,6 +185,10 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 				.addGroup(layout.createParallelGroup()
 					.addComponent(storeLocateLabel)
 					.addComponent(storeLocate)
+				)
+				.addGroup(layout.createParallelGroup()
+						.addComponent(jsonFormatLabel)
+						.addComponent(jsonFormat)
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(locationLabel)

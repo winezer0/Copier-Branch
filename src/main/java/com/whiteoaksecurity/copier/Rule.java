@@ -19,11 +19,13 @@ public class Rule {
 	private String replace;
 	private boolean regex;
 	private boolean storeLocate;
+	private boolean jsonFormat;
 	private String comment;
 	
 	@JsonCreator
 	public Rule(@JsonProperty("enabledBase64") boolean enabledBase64,
 				@JsonProperty("storeLocate") boolean storeLocate,
+				@JsonProperty("jsonFormat") boolean jsonFormat,
 				@JsonProperty("location") int location,
 				@JsonProperty("match") String match,
 				@JsonProperty("replace") String replace,
@@ -35,6 +37,7 @@ public class Rule {
 		this.replace = replace;
 		this.regex = regex;
 		this.storeLocate = storeLocate;
+		this.jsonFormat = jsonFormat;
 		this.comment = comment;
 		
 		int flags = Pattern.DOTALL;
@@ -78,6 +81,10 @@ public class Rule {
 	public boolean isStoreLocate() {
 		return this.storeLocate;
 	}
+
+	public boolean isJsonFormat() {
+		return this.jsonFormat;
+	}
 	
 	public String getComment() {
 		return this.comment;
@@ -111,6 +118,10 @@ public class Rule {
 	
 	public void setIsStoreLocate(boolean storeLocate) {
 		this.storeLocate = storeLocate;
+	}
+
+	public void setIsJsonFormat(boolean jsonFormat) {
+		this.jsonFormat = jsonFormat;
 	}
 	
 	public void setComment(String comment) {

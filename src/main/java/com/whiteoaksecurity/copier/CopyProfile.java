@@ -701,7 +701,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!responseString.isEmpty() && !NONE_REQUEST.equals(responseString) && responseRule.isEnabledBase64()){
+			if (!responseString.isEmpty() && !NONE_RESPONSE.equals(responseString) && responseRule.isEnabledBase64()){
 				responseString = base64EncodeString(responseString);
 			}
 
@@ -747,8 +747,8 @@ public class CopyProfile {
 			if (responseRules.size() > 1) { System.out.println(String.format("注意: 存在多条响应修改规则, 使用最后1条用于位置提取: %s", responseRule.toString()));}
 		}
 
-		//当Base64编码的情况下 输出Json格式数据
-		Boolean useJsonFormat = responseRule.isEnabledBase64() || requestRule.isEnabledBase64();
+		//分析是否调用Json格式输出
+		Boolean useJsonFormat = responseRule.isJsonFormat() || requestRule.isJsonFormat();
 
 		for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
 			Map<String, String> copyLocateDate = copyLocateDate(httpRequestResponse, copyRequest, copyResponse, requestRule, responseRule);
