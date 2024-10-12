@@ -650,9 +650,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!requestString.isEmpty() && !NONE_CONTENT.equals(requestString) && requestRule.isEnabledBase64()){
-				requestString = base64EncodeString(requestString);
-			}
+			requestString = base64EncodeStrWithCheck(requestString, NONE_CONTENT, requestRule.isEnabledBase64());
 
 			map.put(REQUEST_STRING, requestString);
 		}
@@ -704,10 +702,7 @@ public class CopyProfile {
 			}
 
 			//对结果进行base64编码
-			if (!responseString.isEmpty() && !NONE_CONTENT.equals(responseString) && responseRule.isEnabledBase64()){
-				responseString = base64EncodeString(responseString);
-			}
-
+			responseString = base64EncodeStrWithCheck(responseString, NONE_CONTENT, responseRule.isEnabledBase64());
 			map.put(RESPONSE_STRING, responseString);
 		}
 
@@ -715,10 +710,24 @@ public class CopyProfile {
 	}
 
 	/**
+	 * 根据当前的规则值和字符串内容 判断是否需要进行base64编码
+	 * @param string 需要编码的字符串
+	 * @param noneContent 代表空值的常量
+	 * @param enabledBase64 是否需要编码
+	 * @return
+	 */
+	private String base64EncodeStrWithCheck(String string, String noneContent, boolean enabledBase64) {
+		if (!string.isEmpty() && !noneContent.equals(string) && enabledBase64){
+			string = base64EncodeStr(string);
+		}
+		return string;
+	}
+
+	/**
 	 * 进行base64编码字符串
 	 * @return
 	 */
-	private String base64EncodeString(String string) {
+	private String base64EncodeStr(String string) {
 		// 将字符串转换为字节数组
 		byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
 		// 使用 Base64 进行编码
