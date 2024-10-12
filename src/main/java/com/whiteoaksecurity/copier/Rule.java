@@ -23,11 +23,11 @@ public class Rule {
 	
 	@JsonCreator
 	public Rule(@JsonProperty("enabledBase64") boolean enabledBase64,
+				@JsonProperty("storeLocate") boolean storeLocate,
 				@JsonProperty("location") int location,
 				@JsonProperty("match") String match,
 				@JsonProperty("replace") String replace,
 				@JsonProperty("regex") boolean regex,
-				@JsonProperty("storeLocate") boolean storeLocate,
 				@JsonProperty("comment") String comment) {
 		this.enabledBase64 = enabledBase64;
 		this.location = location;

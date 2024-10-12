@@ -9,7 +9,7 @@ import javax.swing.table.AbstractTableModel;
 public class RulesTableModel extends AbstractTableModel {
 	
 	String ruleType = "Rule";
-	private final String[] columnNames = {"EnabledBase64", "Location", "Match", "Replace", "Type", "StoreLocate", "Comment"};
+	private final String[] columnNames = {"EnabledBase64", "StoreLocate", "Location", "Match", "Replace", "Type", "Comment"};
 	String[] locations;
 	private ArrayList<Rule> data = new ArrayList<>();
 
@@ -48,11 +48,11 @@ public class RulesTableModel extends AbstractTableModel {
     public Class getColumnClass(int columnIndex) {
         return switch (columnIndex) {
             case 0 -> Boolean.class;
-            case 1 -> String.class;
+			case 1 -> Boolean.class;
 			case 2 -> String.class;
 			case 3 -> String.class;
 			case 4 -> String.class;
-			case 5 -> Boolean.class;
+			case 5 -> String.class;
 			case 6 -> String.class;
 			default -> String.class;
         };
@@ -64,11 +64,11 @@ public class RulesTableModel extends AbstractTableModel {
 		
 		return switch (columnIndex) {
 			case 0 -> r.isEnabledBase64();
-			case 1 -> locations[r.getLocation()];
-			case 2 -> r.getMatch();
-			case 3 -> r.getReplace();
-			case 4 -> r.isRegex() ? "Regex" : "Literal";
-			case 5 -> r.isStoreLocate();
+			case 1 -> r.isStoreLocate();
+			case 2 -> locations[r.getLocation()];
+			case 3 -> r.getMatch();
+			case 4 -> r.getReplace();
+			case 5 -> r.isRegex() ? "Regex" : "Literal";
 			case 6 -> r.getComment();
 			default -> "";
 		};

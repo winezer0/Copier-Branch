@@ -42,6 +42,11 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			JLabel enabledBase64Label = new JLabel("Enabled Base64:");
 			JCheckBox enabledBase64 = new JCheckBox();
 			enabledBase64.setSelected(false);
+
+			JLabel storeLocateLabel = new JLabel("Store Locate:");
+			JCheckBox storeLocate = new JCheckBox();
+			storeLocate.setSelected(true);
+
 			JLabel locationLabel = new JLabel("Location:");
 			JComboBox locations = new JComboBox(model.getLocations());
 			locations.setMaximumSize(locations.getPreferredSize());
@@ -52,9 +57,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			JLabel regexLabel = new JLabel("Regex:");
 			JCheckBox regex = new JCheckBox();
 			regex.setSelected(true);
-			JLabel storeLocateLabel = new JLabel("Store Locate:");
-			JCheckBox storeLocate = new JCheckBox();
-			storeLocate.setSelected(true);
+
 			JLabel commentLabel = new JLabel("Comment:");
 			JTextField commentField = new JTextField(20);
 
@@ -96,11 +99,11 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 						case "Add" -> {
 							this.rule = new Rule(
 								enabledBase64.isSelected(),
+								storeLocate.isSelected(),
 								locations.getSelectedIndex(),
 								matchField.getText(),
 								replaceField.getText(),
 								regex.isSelected(),
-								storeLocate.isSelected(),
 								commentField.getText()
 							);
 							model.add(this.rule);
@@ -140,20 +143,20 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 				.addGap(15)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledBase64Label)
+					.addComponent(storeLocateLabel)
 					.addComponent(locationLabel)
 					.addComponent(matchLabel)
 					.addComponent(replaceLabel)
 					.addComponent(regexLabel)
-					.addComponent(storeLocateLabel)
 					.addComponent(commentLabel)
 				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledBase64)
+					.addComponent(storeLocate)
 					.addComponent(locations)
 					.addComponent(matchField)
 					.addComponent(replaceField)
 					.addComponent(regex)
-					.addComponent(storeLocate)
 					.addComponent(commentField)
 					.addGroup(layout.createSequentialGroup()
 						.addComponent(submitButton)
@@ -171,6 +174,10 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(enabledBase64)
 				)
 				.addGroup(layout.createParallelGroup()
+					.addComponent(storeLocateLabel)
+					.addComponent(storeLocate)
+				)
+				.addGroup(layout.createParallelGroup()
 					.addComponent(locationLabel)
 					.addComponent(locations)
 				)
@@ -186,10 +193,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(regexLabel)
 					.addComponent(regex)
 				)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(storeLocateLabel)
-					.addComponent(storeLocate)
-				)
+
 				.addGroup(layout.createParallelGroup()
 					.addComponent(commentLabel)
 					.addComponent(commentField)

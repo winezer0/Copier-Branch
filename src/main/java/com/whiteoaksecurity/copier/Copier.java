@@ -573,25 +573,29 @@ public class Copier implements BurpExtension {
 		columnModel.getColumn(0).setPreferredWidth(100);
 		columnModel.getColumn(0).setResizable(false);
 
+		// Case Sensitive Column
+		columnModel.getColumn(1).setPreferredWidth(100);
+		columnModel.getColumn(1).setResizable(false);
+
+
 		// Location Column
-		columnModel.getColumn(1).setPreferredWidth(150);
-		
-		// Match Column
 		columnModel.getColumn(2).setPreferredWidth(150);
-		
-		// Replace Column
+
+
+
+		// Match Column
 		columnModel.getColumn(3).setPreferredWidth(150);
 		
+		// Replace Column
+		columnModel.getColumn(4).setPreferredWidth(150);
+		
 		// Type Column
-		columnModel.getColumn(4).setPreferredWidth(columnModel.getColumn(0).getPreferredWidth());
-		columnModel.getColumn(4).setResizable(false);
+		columnModel.getColumn(5).setPreferredWidth(columnModel.getColumn(0).getPreferredWidth());
+		columnModel.getColumn(5).setResizable(false);
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		columnModel.getColumn(4).setCellRenderer(centerRenderer);
-		
-		// Case Sensitive Column
-		columnModel.getColumn(5).setPreferredWidth(100);
-		columnModel.getColumn(5).setResizable(false);
+		columnModel.getColumn(5).setCellRenderer(centerRenderer);
+
 		
 		// Comment Column
 		columnModel.getColumn(6).setPreferredWidth(350);
