@@ -6,9 +6,6 @@ Copier Burp扩展（兼容社区和专业版），允许用户轻松地复制请
 
 Copier 原项目地址 请访问 https://github.com/Tib3rius/Copier
 
-## TODO
-
-删除规则内容|删除配置文件 后 UI表单和数据实际没有更新 原版本就存在的BUG 简单测试暂时没有解决
 
 ## 修改功能
 
@@ -35,3 +32,5 @@ switch (requestRule.getLocation()) {
 注意：对于存在多条规则的情况下，所有规则都参与替换，但是且仅调用最后一条规则用于位置提取.
 
 注意：该插件使用的是高版本 montoya-api Jdk 较高版本语法 需要使用新版burp (2024+)
+
+注意：删除规则的确认按钮在右侧!!!

@@ -98,9 +98,9 @@ public class CopyProfile {
 		ArrayList<HttpRequestResponse> modified = new ArrayList<>();
 
 		//请求修改规则
-		ArrayList<Rule> requestReplaceRules = getReplaceRules(this.getRequestRulesTableModel().getData());
+		ArrayList<Rule> requestReplaceRules = getEnabledReplaceRules(this.getRequestRulesTableModel().getData());
 		//响应修改规则
-		ArrayList<Rule> responseReplaceRules = getReplaceRules(this.getResponseRulesTableModel().getData());
+		ArrayList<Rule> responseReplaceRules = getEnabledReplaceRules(this.getResponseRulesTableModel().getData());
 
 		for (HttpRequestResponse httpRequestResponse : requestResponses) {
 
@@ -868,8 +868,19 @@ public class CopyProfile {
 		StringBuilder modified = new StringBuilder();
 
 		//copy替换功能目前只能支持一条规则的拷贝,获取最后一条规则用于提取指定位置,其他的规则用于替换,最好还是只有一条规则
-		ArrayList<Rule> requestLocateRules = getLocateRules(this.getRequestRulesTableModel().getData());
-		ArrayList<Rule> responseLocateRules = getLocateRules(this.getResponseRulesTableModel().getData());
+		ArrayList<Rule> requestLocateRules = getEnabledLocateRules(this.getRequestRulesTableModel().getData());
+		ArrayList<Rule> responseLocateRules = getEnabledLocateRules(this.getResponseRulesTableModel().getData());
+
+		//没有找到任何提取规则时,忽略操作?
+		if (requestLocateRules.isEmpty()&&responseLocateRules.isEmpty()){
+			System.out.println("没有获取到任何开放的提取规则, 调用替换规则提取");
+			requestLocateRules = fixReplaceRulesToLocateRules(getEnabledReplaceRules(this.getRequestRulesTableModel().getData()));
+			responseLocateRules = fixReplaceRulesToLocateRules(getEnabledReplaceRules(this.getResponseRulesTableModel().getData()));
+		}
+		if (requestLocateRules.isEmpty() && responseLocateRules.isEmpty()){
+			System.out.println("没有获取到任何开放的提取规则和修改规则, 返回Null");
+			return null;
+		}
 
 		//分析是否调用Json格式输出
 		Boolean isJsonMode = checkUseJsonFormat(listAddList(requestLocateRules, responseLocateRules));
@@ -878,8 +889,8 @@ public class CopyProfile {
 		if (!isJsonMode){
 			//常规的字符串格式保存
 			//System.out.println("注意: 当前Text模式 仅使用最后1条规则用于请求|响应位置提取");
-			Rule requestLocateRule = getLocateRule(requestLocateRules);
-			Rule responseLocateRule = getLocateRule(responseLocateRules);
+			Rule requestLocateRule = getLastLocateRule(requestLocateRules);
+			Rule responseLocateRule = getLastLocateRule(responseLocateRules);
 
 			for (HttpRequestResponse httpRequestResponse : httpRequestResponses) {
 				Map<String, String> copyLocateDateSimple = copyLocateDateSimple(httpRequestResponse, copyRequest, copyResponse, requestLocateRule, responseLocateRule);
@@ -905,4 +916,5 @@ public class CopyProfile {
 
 		return modified.toString();
 	}
+
 }

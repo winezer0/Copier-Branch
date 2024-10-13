@@ -53,7 +53,7 @@ public class Copier implements BurpExtension {
 
     @Override
     public void initialize(MontoyaApi api) {
-        api.extension().setName("Copier");
+        api.extension().setName("CopierPlus");
 		
 		new Logger(api.logging());
 
@@ -562,45 +562,49 @@ public class Copier implements BurpExtension {
 		resizeColumnWidth(responseRulesTable);
 		
 		api.userInterface().applyThemeToComponent(suiteTab);
-		api.userInterface().registerSuiteTab("Copier", suiteTab);
+		api.userInterface().registerSuiteTab("CopierPlus", suiteTab);
 		api.userInterface().registerContextMenuItemsProvider(new CopyContextMenu(api, this.profiles));
 
     }
 	
 	public static void resizeColumnWidth(JTable table) {
 		TableColumnModel columnModel = table.getColumnModel();
-		// EnabledBase64 Column
+		// EnabledRule Column
 		columnModel.getColumn(0).setPreferredWidth(100);
 		columnModel.getColumn(0).setResizable(false);
 
-		// Store Locate Column
+		// EnabledBase64 Column
 		columnModel.getColumn(1).setPreferredWidth(100);
 		columnModel.getColumn(1).setResizable(false);
 
-		// Json Format Column
+		// Store Locate Column
 		columnModel.getColumn(2).setPreferredWidth(100);
 		columnModel.getColumn(2).setResizable(false);
 
+		// Json Format Column
+		columnModel.getColumn(3).setPreferredWidth(100);
+		columnModel.getColumn(3).setResizable(false);
+
 
 		// Location Column
-		columnModel.getColumn(3).setPreferredWidth(150);
+		columnModel.getColumn(4).setPreferredWidth(150);
 
 
 		// Match Column
-		columnModel.getColumn(4).setPreferredWidth(150);
-		
-		// Replace Column
 		columnModel.getColumn(5).setPreferredWidth(150);
 		
+		// Replace Column
+		columnModel.getColumn(6).setPreferredWidth(150);
+		
 		// Type Column
-		columnModel.getColumn(6).setPreferredWidth(columnModel.getColumn(0).getPreferredWidth());
-		columnModel.getColumn(6).setResizable(false);
+		columnModel.getColumn(7).setPreferredWidth(columnModel.getColumn(0).getPreferredWidth());
+		columnModel.getColumn(7).setResizable(false);
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		columnModel.getColumn(6).setCellRenderer(centerRenderer);
+		columnModel.getColumn(7).setCellRenderer(centerRenderer);
 
 		
 		// Comment Column
-		columnModel.getColumn(7).setPreferredWidth(350);
+		columnModel.getColumn(8).setPreferredWidth(350);
 	}
 }

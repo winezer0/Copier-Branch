@@ -19,10 +19,10 @@ public class utils {
     }
 
     //从所有规则中找到 开启非提取功能的规则
-    public static ArrayList<Rule> getReplaceRules(ArrayList<Rule> rules) {
+    public static ArrayList<Rule> getEnabledReplaceRules(ArrayList<Rule> rules) {
         ArrayList<Rule> replaceRules = new ArrayList<>();
         for(Rule rule : rules){
-            if (!rule.isStoreLocate()){
+            if (rule.isEnabledRule() && !rule.isStoreLocate()){
                 replaceRules.add(rule);
             }
         }
@@ -30,10 +30,10 @@ public class utils {
     }
 
     //从所有规则中找到 开启了提取功能的规则
-    public static ArrayList<Rule> getLocateRules(ArrayList<Rule> rules) {
+    public static ArrayList<Rule> getEnabledLocateRules(ArrayList<Rule> rules) {
         ArrayList<Rule> locateRules = new ArrayList<>();
         for(Rule rule : rules){
-            if (rule.isStoreLocate()){
+            if (rule.isEnabledRule() && rule.isStoreLocate()){
                 locateRules.add(rule);
             }
         }
@@ -50,7 +50,7 @@ public class utils {
     }
 
     //从所有提取规则中获取最后一条规则
-    public static Rule getLocateRule(ArrayList<Rule> locateRules) {
+    public static Rule getLastLocateRule(ArrayList<Rule> locateRules) {
         Rule locateRule = null;
         if (locateRules.size() > 0){
             locateRule = locateRules.get(locateRules.size() - 1);
@@ -119,4 +119,15 @@ public class utils {
         }
         return requestHeaders;
     }
+
+    /*
+        修改替换规则为提取规则,提取对象为所有位置
+     */
+    public static ArrayList<Rule> fixReplaceRulesToLocateRules(ArrayList<Rule> replaceRules) {
+        for (Rule rule: replaceRules){
+            rule.setLocation(0); //Case 0 保存全文
+        }
+        return replaceRules;
+    }
+
 }

@@ -39,6 +39,10 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			String title = "";
 			String submit = "";
 
+			JLabel enabledRuleLabel = new JLabel("Enabled Rule:");
+			JCheckBox enabledRule = new JCheckBox();
+			enabledRule.setSelected(true);
+
 			JLabel enabledBase64Label = new JLabel("Enabled Base64:");
 			JCheckBox enabledBase64 = new JCheckBox();
 			enabledBase64.setSelected(false);
@@ -74,6 +78,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					title = "Edit " + model.getRuleType() + " Rule";
 					submit = "Edit";
 					this.rule = model.getData().get(table.getSelectedRow());
+					enabledRule.setSelected(this.rule.isEnabledRule());
 					enabledBase64.setSelected(this.rule.isEnabledBase64());
 					locations.setSelectedItem(model.getLocations()[this.rule.getLocation()]);
 					matchField.setText(this.rule.getMatch());
@@ -103,6 +108,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					switch (event.getActionCommand()) {
 						case "Add" -> {
 							this.rule = new Rule(
+								enabledRule.isSelected(),
 								enabledBase64.isSelected(),
 								storeLocate.isSelected(),
 								jsonFormat.isSelected(),
@@ -125,6 +131,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							// Do this last since we need to compile the pattern using potentially new flags.
 							this.rule.setMatch(matchField.getText());
 
+							this.rule.setIsEnabledRule(enabledRule.isSelected());
 							this.rule.setIsEnabledBase64(enabledBase64.isSelected());
 						}
 					}
@@ -149,6 +156,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addGap(15)
 				.addGroup(layout.createParallelGroup()
+					.addComponent(enabledRuleLabel)
 					.addComponent(enabledBase64Label)
 					.addComponent(storeLocateLabel)
 					.addComponent(jsonFormatLabel)
@@ -159,6 +167,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(commentLabel)
 				)
 				.addGroup(layout.createParallelGroup()
+					.addComponent(enabledRule)
 					.addComponent(enabledBase64)
 					.addComponent(storeLocate)
 					.addComponent(jsonFormat)
@@ -178,6 +187,10 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 
 			layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGap(15)
+				.addGroup(layout.createParallelGroup()
+						.addComponent(enabledRuleLabel)
+						.addComponent(enabledRule)
+				)
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledBase64Label)
 					.addComponent(enabledBase64)

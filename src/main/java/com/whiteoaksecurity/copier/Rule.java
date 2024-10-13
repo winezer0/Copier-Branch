@@ -11,7 +11,8 @@ import java.util.regex.PatternSyntaxException;
 public class Rule {
 	public static final boolean REGEX = true;
 	public static final boolean LITERAL = false;
-	
+
+	private boolean enabledRule;
 	private boolean enabledBase64;
 	private int location;
 	private String match;
@@ -23,7 +24,8 @@ public class Rule {
 	private String comment;
 	
 	@JsonCreator
-	public Rule(@JsonProperty("enabledBase64") boolean enabledBase64,
+	public Rule(@JsonProperty("enabledRule") boolean enabledRule,
+				@JsonProperty("enabledBase64") boolean enabledBase64,
 				@JsonProperty("storeLocate") boolean storeLocate,
 				@JsonProperty("jsonFormat") boolean jsonFormat,
 				@JsonProperty("location") int location,
@@ -31,6 +33,7 @@ public class Rule {
 				@JsonProperty("replace") String replace,
 				@JsonProperty("regex") boolean regex,
 				@JsonProperty("comment") String comment) {
+		this.enabledRule = enabledRule;
 		this.enabledBase64 = enabledBase64;
 		this.location = location;
 		this.match = match;
@@ -50,14 +53,19 @@ public class Rule {
 			this.pattern = Pattern.compile(match, flags);
 		} catch (PatternSyntaxException e) {
 			this.pattern = null;
-			this.enabledBase64 = false;
+//			this.enabledBase64 = false;
+			this.enabledRule = false;
 		}
 	}
 	
 	public boolean isEnabledBase64() {
 		return this.enabledBase64;
 	}
-	
+
+	public boolean isEnabledRule() {
+		return this.enabledRule;
+	}
+
 	public int getLocation() {
 		return this.location;
 	}
@@ -100,9 +108,14 @@ public class Rule {
 	
 	public void setIsEnabledBase64(boolean enabledBase64) {
 		this.enabledBase64 = enabledBase64;
+//		this.compile(this.match, false);
+	}
+
+	public void setIsEnabledRule(boolean enabledRule) {
+		this.enabledRule = enabledRule;
 		this.compile(this.match, false);
 	}
-	
+
 	public void setLocation(int location) {
 		this.location = location;
 	}
@@ -146,7 +159,8 @@ public class Rule {
 			this.pattern = Pattern.compile(match, flags);
 		} catch (PatternSyntaxException e) {
 			this.pattern = null;
-			this.enabledBase64 = false;
+//			this.enabledBase64 = false;
+			this.enabledRule = false;
 		}
 	}
 }
