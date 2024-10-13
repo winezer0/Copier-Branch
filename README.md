@@ -11,9 +11,10 @@ Copier 原项目地址 请访问 https://github.com/Tib3rius/Copier
 
 1、允许正则替换内容框为空
 
-2、取消 Case Sensitive 勾选框 和 Enable 勾选框。
+2、取消 Case Sensitive 勾选框。
 
-3、增加 StoreLocate 勾选框, 用于确定是否仅提取 Location 指定部分的数据而不是全文复制
+3、增加 LocateRule 勾选框, 表明是提取规则, 用于确定是否仅提取 Location 指定部分的数据而不是全文复制
+
 ```
 目前已实现
 switch (requestRule.getLocation()) {
@@ -29,7 +30,9 @@ switch (requestRule.getLocation()) {
 
 5、增加 jsonFormat 勾选框 , 用于确定是否输出Json格式的结果
 
-注意：对于存在多条规则的情况下，所有规则都参与替换，但是且仅调用最后一条规则用于位置提取.
+6、支持写入到文件或剪贴板
+
+注意：对于存在多条规则的情况下，所有规则都参与替换，但对于非Json模式下的提取，且仅调用最后一条规则用于位置提取，对于Json模式下支持选择多个位置。
 
 注意：该插件使用的是高版本 montoya-api Jdk 较高版本语法 需要使用新版burp (2024+)
 
