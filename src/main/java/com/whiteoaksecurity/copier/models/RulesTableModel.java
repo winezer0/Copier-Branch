@@ -9,7 +9,7 @@ import javax.swing.table.AbstractTableModel;
 public class RulesTableModel extends AbstractTableModel {
 	
 	String ruleType = "Rule";
-	private final String[] columnNames = {"EnabledRule", "EnabledBase64", "StoreLocate","JsonFormat", "Location", "Match", "Replace", "Type", "Comment"};
+	private final String[] columnNames = {"EnabledRule", "EnabledBase64", "LocateRule","JsonFormat", "Location", "Match", "Replace", "Type", "Comment"};
 	String[] locations;
 	private ArrayList<Rule> data = new ArrayList<>();
 
@@ -67,7 +67,7 @@ public class RulesTableModel extends AbstractTableModel {
 		return switch (columnIndex) {
 			case 0 -> r.isEnabledRule();
 			case 1 -> r.isEnabledBase64();
-			case 2 -> r.isStoreLocate();
+			case 2 -> r.isLocateRule();
 			case 3 -> r.isJsonFormat();
 			case 4 -> locations[r.getLocation()];
 			case 5 -> r.getMatch();
@@ -85,7 +85,7 @@ public class RulesTableModel extends AbstractTableModel {
 		switch (columnIndex) {
 			case 0 -> r.setIsEnabledRule((Boolean) value);
 			case 1 -> r.setIsEnabledBase64((Boolean) value);
-			case 2 -> r.setIsStoreLocate((Boolean) value);
+			case 2 -> r.setIsLocateRule((Boolean) value);
 			case 3 -> r.setIsJsonFormat((Boolean) value);
 		}
 	}

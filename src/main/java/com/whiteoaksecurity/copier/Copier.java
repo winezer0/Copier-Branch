@@ -577,7 +577,7 @@ public class Copier implements BurpExtension {
 		columnModel.getColumn(1).setPreferredWidth(100);
 		columnModel.getColumn(1).setResizable(false);
 
-		// Store Locate Column
+		// Locate Rule Column
 		columnModel.getColumn(2).setPreferredWidth(100);
 		columnModel.getColumn(2).setResizable(false);
 

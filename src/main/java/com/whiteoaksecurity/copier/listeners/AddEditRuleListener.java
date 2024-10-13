@@ -47,9 +47,9 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 			JCheckBox enabledBase64 = new JCheckBox();
 			enabledBase64.setSelected(false);
 
-			JLabel storeLocateLabel = new JLabel("Store Locate:");
-			JCheckBox storeLocate = new JCheckBox();
-			storeLocate.setSelected(true);
+			JLabel locateRuleLabel = new JLabel("Locate Rule:");
+			JCheckBox locateRule = new JCheckBox();
+			locateRule.setSelected(true);
 
 			JLabel jsonFormatLabel = new JLabel("Json Format:");
 			JCheckBox jsonFormat = new JCheckBox();
@@ -84,7 +84,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					matchField.setText(this.rule.getMatch());
 					replaceField.setText(this.rule.getReplace());
 					regex.setSelected(this.rule.isRegex());
-					storeLocate.setSelected(this.rule.isStoreLocate());
+					locateRule.setSelected(this.rule.isLocateRule());
 					jsonFormat.setSelected(this.rule.isJsonFormat());
 					commentField.setText(this.rule.getComment());
 				}
@@ -110,7 +110,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							this.rule = new Rule(
 								enabledRule.isSelected(),
 								enabledBase64.isSelected(),
-								storeLocate.isSelected(),
+								locateRule.isSelected(),
 								jsonFormat.isSelected(),
 								locations.getSelectedIndex(),
 								matchField.getText(),
@@ -124,7 +124,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 							this.rule.setLocation(locations.getSelectedIndex());
 							this.rule.setReplace(replaceField.getText());
 							this.rule.setIsRegex(regex.isSelected());
-							this.rule.setIsStoreLocate(storeLocate.isSelected());
+							this.rule.setIsLocateRule(locateRule.isSelected());
 							this.rule.setIsJsonFormat(jsonFormat.isSelected());
 							this.rule.setComment(commentField.getText());
 
@@ -158,7 +158,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledRuleLabel)
 					.addComponent(enabledBase64Label)
-					.addComponent(storeLocateLabel)
+					.addComponent(locateRuleLabel)
 					.addComponent(jsonFormatLabel)
 					.addComponent(locationLabel)
 					.addComponent(matchLabel)
@@ -169,7 +169,7 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 				.addGroup(layout.createParallelGroup()
 					.addComponent(enabledRule)
 					.addComponent(enabledBase64)
-					.addComponent(storeLocate)
+					.addComponent(locateRule)
 					.addComponent(jsonFormat)
 					.addComponent(locations)
 					.addComponent(matchField)
@@ -196,8 +196,8 @@ public class AddEditRuleListener extends WindowAdapter implements ActionListener
 					.addComponent(enabledBase64)
 				)
 				.addGroup(layout.createParallelGroup()
-					.addComponent(storeLocateLabel)
-					.addComponent(storeLocate)
+					.addComponent(locateRuleLabel)
+					.addComponent(locateRule)
 				)
 				.addGroup(layout.createParallelGroup()
 						.addComponent(jsonFormatLabel)

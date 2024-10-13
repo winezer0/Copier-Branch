@@ -618,7 +618,7 @@ public class CopyProfile {
 				//默认返回全文
 				requestReturn = new String(httpRequest.toByteArray().getBytes(), StandardCharsets.UTF_8);
 				//勾选只保存已选定的位置,只保留指定的位置的数据
-				if (requestRule != null && requestRule.isStoreLocate()){
+				if (requestRule != null && requestRule.isLocateRule()){
 					try {
 						String entireRequest = httpRequest.toByteArray().toString();
 						switch (requestRule.getLocation()) {
@@ -673,7 +673,7 @@ public class CopyProfile {
 				//默认返回全文
 				responseReturn = entireResponseUTF8;
 
-				if (responseRule != null && responseRule.isStoreLocate()){
+				if (responseRule != null && responseRule.isLocateRule()){
 					try {
 						switch (responseRule.getLocation()) {
 							// Response

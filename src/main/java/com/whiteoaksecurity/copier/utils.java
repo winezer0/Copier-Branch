@@ -22,7 +22,7 @@ public class utils {
     public static ArrayList<Rule> getEnabledReplaceRules(ArrayList<Rule> rules) {
         ArrayList<Rule> replaceRules = new ArrayList<>();
         for(Rule rule : rules){
-            if (rule.isEnabledRule() && !rule.isStoreLocate()){
+            if (rule.isEnabledRule() && !rule.isLocateRule()){
                 replaceRules.add(rule);
             }
         }
@@ -33,7 +33,7 @@ public class utils {
     public static ArrayList<Rule> getEnabledLocateRules(ArrayList<Rule> rules) {
         ArrayList<Rule> locateRules = new ArrayList<>();
         for(Rule rule : rules){
-            if (rule.isEnabledRule() && rule.isStoreLocate()){
+            if (rule.isEnabledRule() && rule.isLocateRule()){
                 locateRules.add(rule);
             }
         }
