@@ -261,9 +261,9 @@ public class utils {
 
 
     /**
-     * 获取body的字符串 不乱码的那种
+     * 获取 ByteArray 的字符串 自定义编码
      */
-    public static String getBodyStr(ByteArray bodyBytes, Charset charset) {
+    public static String ByteArrayToString(ByteArray bodyBytes, Charset charset) {
         return new String(bodyBytes.getBytes(), charset);
     }
 }
