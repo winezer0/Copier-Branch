@@ -26,6 +26,7 @@ public class CopyProfile {
 	public static final String RESPONSE_DATA = "responseData";
 	public static final String NONE_CONTENT = "NONE CONTENT";
 	public static final String SPILT = "\r\n\r\n";
+	public static final String CONCAT = "\n====================================================\n";
 
 	private String name;
 	private RequestRulesTableModel requestRulesTableModel;
@@ -898,7 +899,7 @@ public class CopyProfile {
 				if (copyRequest) { copyBuffer.append(copyLocateDateSimple.get(REQUEST_DATA)); }
 				if (copyRequest && copyResponse) { copyBuffer.append("\n\n"); }
 				if (copyResponse) { copyBuffer.append(copyLocateDateSimple.get(RESPONSE_DATA)); }
-				modified.append(copyBuffer).append("\n====================================================\n");
+				modified.append(copyBuffer).append(CONCAT);
 			}
 		} else {
 			//Json格式保存 应当支持更多复杂的内容
@@ -910,7 +911,7 @@ public class CopyProfile {
 				} catch (JsonProcessingException e) {
 					e.printStackTrace();
 				}
-				modified.append(jsonString).append("\n====================================================\n");
+				modified.append(jsonString).append(CONCAT);
 			}
 		}
 
