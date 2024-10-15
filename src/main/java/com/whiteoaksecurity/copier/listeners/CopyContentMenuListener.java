@@ -3,7 +3,7 @@ package com.whiteoaksecurity.copier.listeners;
 import burp.api.montoya.http.message.HttpRequestResponse;
 import burp.api.montoya.ui.contextmenu.ContextMenuEvent;
 import com.whiteoaksecurity.copier.CopyProfile;
-import com.whiteoaksecurity.copier.utils;
+import com.whiteoaksecurity.copier.Utils;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,7 +47,7 @@ public class CopyContentMenuListener implements ActionListener {
 		String copyBuffer = this.profile.copyLocateDate(handledRequestResponses, this.copyRequest, this.copyResponse);
 
 		//写入内容到自定义文件或剪贴板
-		if (!copyBuffer.isEmpty()){ utils.WriteResultToFileOrClipboard(copyBuffer);}
+		if (!copyBuffer.isEmpty()){ Utils.WriteResultToFileOrClipboard(copyBuffer);}
 	}
 
 //	public static void WriteResultToFileOrClipboard(String copyBuffer) {

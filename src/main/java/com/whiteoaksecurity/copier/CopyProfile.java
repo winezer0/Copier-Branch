@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.whiteoaksecurity.copier.utils.*;
+import static com.whiteoaksecurity.copier.Utils.*;
 
 
 public class CopyProfile {

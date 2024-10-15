@@ -20,7 +20,7 @@ import java.util.List;
 
 import static com.whiteoaksecurity.copier.CopyProfile.NONE_CONTENT;
 
-public class utils {
+public class Utils {
 
     public static ArrayList<Rule> listAddList(ArrayList<Rule> requestLocateRules, ArrayList<Rule> responseLocateRules) {
         ArrayList<Rule> locateRules = new ArrayList<>();
@@ -204,7 +204,7 @@ public class utils {
 
                 // 保存内容到文件夹中的多个文件
                 for (int i = 0; i < parts.size(); i++) {
-                    String fileName = (i + 1) + ".txt"; // 文件名
+                    String fileName = i + ".txt"; // 文件名
                     Path filePath = folderToSave.toPath().resolve(fileName);
                     String content = parts.get(i);
                     writeToFileCover(filePath, content, StandardCharsets.UTF_8);
