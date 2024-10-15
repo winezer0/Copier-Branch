@@ -1,5 +1,7 @@
 package com.whiteoaksecurity.copier;
 
+import burp.api.montoya.core.ByteArray;
+import burp.api.montoya.http.message.ContentType;
 import burp.api.montoya.http.message.HttpMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -641,14 +643,14 @@ public class CopyProfile {
 							}
 							// Request Body 请求体
 							case 9 -> {
-								requestReturn = httpRequest.bodyToString();
+								requestReturn = getBodyStr(httpRequest.body(), StandardCharsets.UTF_8);
 								break;
 							}
 							default -> {
 								System.out.println("提示：该选项未精确实现, 返回请求行+请求体 ...");
 								String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
 								String requestLine = entireRequestAsArray[0];
-								String requestBody = httpRequest.bodyToString();
+								String requestBody = getBodyStr(httpRequest.body(), StandardCharsets.UTF_8);
 								requestReturn = (requestLine + "\n" + requestBody).trim();
 								break;
 							}
@@ -695,7 +697,8 @@ public class CopyProfile {
 							}
 							// Response Body
 							case 6 -> {
-								responseReturn = httpResponse.bodyToString();
+								//responseReturn = httpResponse.bodyToString(); //存在乱码问题
+								responseReturn= getBodyStr(httpResponse.body(), StandardCharsets.UTF_8);
 								break;
 							}
 
@@ -703,7 +706,7 @@ public class CopyProfile {
 								System.out.println("提示：该选项未精确实现, 返回响应行+响应体 ...");
 								String[] entireResponseAsArray = entireResponseUTF8.lines().toList().toArray(new String[0]);
 								String responseLine = entireResponseAsArray[0];
-								String responseBody = httpResponse.bodyToString();
+								String responseBody = getBodyStr(httpResponse.body(), StandardCharsets.UTF_8);
 								responseReturn = (responseLine + "\n" + responseBody).trim();
 								break;
 							}
@@ -721,6 +724,8 @@ public class CopyProfile {
 
 		return map;
 	}
+
+
 
 
 	private Map<String, String> copyLocateDateJson(HttpRequestResponse httpRequestResponse,
@@ -768,7 +773,7 @@ public class CopyProfile {
 								}
 								// Request Body 请求体
 								case 9 -> {
-									String requestBody = httpRequest.bodyToString();
+									String requestBody = getBodyStr(httpRequest.body(), StandardCharsets.UTF_8);
 									requestBody = base64EncodeStrWithCheck(requestBody, requestRule.isEnabledBase64());
 									map.put("requestBody", requestBody);
 									break;
@@ -777,7 +782,7 @@ public class CopyProfile {
 									System.out.println("提示：该选项未精确实现, 返回请求行+请求体 ...");
 									String[] entireRequestAsArray = entireRequest.lines().toList().toArray(new String[0]);
 									String requestLine = entireRequestAsArray[0];
-									String requestBody = httpRequest.bodyToString();
+									String requestBody = getBodyStr(httpRequest.body(), StandardCharsets.UTF_8);
 									map.put("requestLine", requestLine);
 									map.put("requestBody", requestBody);
 									break;
@@ -832,7 +837,7 @@ public class CopyProfile {
 								}
 								// Response Body
 								case 6 -> {
-									String responseBody = httpResponse.bodyToString();
+									String responseBody = getBodyStr(httpResponse.body(), StandardCharsets.UTF_8);
 									responseBody = base64EncodeStrWithCheck(responseBody, responseRule.isEnabledBase64());
 									map.put("responseBody", responseBody);
 									break;
@@ -842,7 +847,7 @@ public class CopyProfile {
 									System.out.println("提示：该选项未精确实现, 返回响应行+响应体 ...");
 									String[] entireResponseAsArray = (new String(httpResponse.toByteArray().getBytes(), StandardCharsets.UTF_8)).lines().toList().toArray(new String[0]);
 									String responseLine = entireResponseAsArray[0];
-									String responseBody = httpResponse.bodyToString();
+									String responseBody = getBodyStr(httpResponse.body(), StandardCharsets.UTF_8);
 									map.put("responseLine", responseLine);
 									map.put("responseBody", responseBody);
 									break;

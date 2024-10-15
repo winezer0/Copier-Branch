@@ -1,5 +1,6 @@
 package com.whiteoaksecurity.copier;
 
+import burp.api.montoya.core.ByteArray;
 import burp.api.montoya.http.message.requests.HttpRequest;
 import burp.api.montoya.http.message.responses.HttpResponse;
 
@@ -256,5 +257,13 @@ public class utils {
             default: // 剪贴板
                 JOptionPane.showMessageDialog(null, "用户取消保存!");
         }
+    }
+
+
+    /**
+     * 获取body的字符串 不乱码的那种
+     */
+    public static String getBodyStr(ByteArray bodyBytes, Charset charset) {
+        return new String(bodyBytes.getBytes(), charset);
     }
 }
