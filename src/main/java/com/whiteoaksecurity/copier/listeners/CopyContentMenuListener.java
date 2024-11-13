@@ -45,25 +45,23 @@ public class CopyContentMenuListener implements ActionListener {
 			}
 
 			// 判断数据量是否超过100
-			int splitSize = 20;
-			if (selectedRequestResponses.size() > splitSize) {
-				// 超过一次处理的就不允许保存到剪贴板
-				if (saveOption==2){
-					JOptionPane.showMessageDialog(null, "被选择的数据过多,请保存到文件中!!!");
-					return;
-				}
-
-				// 划分为多个子列表进行处理
-				ArrayList<ArrayList<HttpRequestResponse>> subLists = splitList(selectedRequestResponses, splitSize);
-				int totalSize = subLists.size();
-				for (int baseNum = 0; baseNum < totalSize; baseNum++) {
-					boolean isLastList = (baseNum == totalSize - 1);
-					replaceAndCopyRequestResponses(subLists.get(baseNum), saveOption, savePath, baseNum*splitSize, isLastList);
-				}
-
-			} else if (selectedRequestResponses.size() > 0){
+			int splitNum = 20;
+			int totalMsg = selectedRequestResponses.size();
+			if (splitNum > totalMsg && totalMsg > 0){
 				//直接处理
 				replaceAndCopyRequestResponses(selectedRequestResponses, saveOption, savePath, 0, true);
+			} else if (totalMsg > splitNum) {
+				// 超过一次处理的就不允许保存到剪贴板
+				if (saveOption == SaveToClipboard){
+					JOptionPane.showMessageDialog(null, "被选择的数据过多,请重新选择保存到文件中!!!");
+					return;
+				}
+				// 划分为多个子列表进行处理
+				ArrayList<ArrayList<HttpRequestResponse>> subLists = splitList(selectedRequestResponses, splitNum);
+				int listSize = subLists.size();
+				for (int index = 0; index < listSize; index++) {
+					replaceAndCopyRequestResponses(subLists.get(index), saveOption, savePath, splitNum*index, listSize-index==1);
+				}
 			}
 		}
 	}
