@@ -888,7 +888,7 @@ public class CopyProfile {
 
 		//分析是否调用Json格式输出
 		Boolean isJsonMode = checkUseJsonFormat(listAddList(requestLocateRules, responseLocateRules));
-		System.out.println("Current is Json Mode: " + isJsonMode);
+		//System.out.println("Current is Json Mode: " + isJsonMode);
 
 		if (!isJsonMode){
 			//常规的字符串格式保存
