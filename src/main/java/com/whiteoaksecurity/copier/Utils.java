@@ -11,7 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 import static com.whiteoaksecurity.copier.CopyProfile.NONE_CONTENT;
 
@@ -111,19 +113,26 @@ public class Utils {
     }
 
     public static String getRequestHeaders(HttpRequest httpRequest) {
-        String requestHeaders = "";
-
         String entireRequest = httpRequest.toByteArray().toString();
 
-        if (httpRequest.bodyOffset() > 0){
-            requestHeaders = entireRequest.substring(0, httpRequest.bodyOffset()).trim();
-        } else if (entireRequest.contains(CopyProfile.SPILT)){
-            System.out.println(String.format("获取请求头发生错误: bodyOffset=[%s] 尝试切割方案获取请求头", httpRequest.bodyOffset()));
-            requestHeaders = entireRequest.split(CopyProfile.SPILT,2)[0];
-        } else {
-            System.out.println("获取请求头发生错误: 当前不包含(换行*2)特征 返回全文作为请求头");
+        // 如果请求体偏移量大于0，或包含特定分隔符，则处理；否则返回空字符串。
+        if (httpRequest.bodyOffset() <= 0 && !entireRequest.contains(CopyProfile.SPILT)) {
+            System.out.println("获取请求头发生错误: 当前不包含(换行*2)特征 返回空字符串作为请求头");
+            return "";
         }
-        return requestHeaders;
+
+        // 根据条件选择切割请求头的索引
+        int bodyStartIndex = httpRequest.bodyOffset() > 0 ? httpRequest.bodyOffset() : entireRequest.indexOf(CopyProfile.SPILT);
+        if (bodyStartIndex <= 0)  return "";
+
+        // 提取请求头部
+        String requestHeaders = entireRequest.substring(0, bodyStartIndex).trim();
+
+        // 将请求头部转换为字符串数组并去除第一个元素（通常是请求行）
+        String[] headersAsArray = requestHeaders.lines().toList().toArray(new String[0]);
+        if (headersAsArray.length <= 1) return "";
+        String onlyRequestHeaders = String.join("\r\n", Arrays.copyOfRange(headersAsArray, 1, headersAsArray.length));
+        return onlyRequestHeaders;
     }
 
     /*

@@ -60,7 +60,7 @@ public class CopyContentMenuListener implements ActionListener {
 				ArrayList<ArrayList<HttpRequestResponse>> subLists = splitList(selectedRequestResponses, splitNum);
 				int listSize = subLists.size();
 				for (int index = 0; index < listSize; index++) {
-					replaceAndCopyRequestResponses(subLists.get(index), saveOption, savePath, splitNum*index, listSize-index==1);
+					replaceAndCopyRequestResponses(subLists.get(index), saveOption, savePath, splitNum * index, listSize - index==1);
 				}
 			}
 		}

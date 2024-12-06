@@ -886,7 +886,7 @@ public class CopyProfile {
 			return null;
 		}
 
-		//分析是否调用Json格式输出
+		//分析是否调用Json格式输出 任何一个规则含有json格式要求就表示需要json格式
 		Boolean isJsonMode = checkUseJsonFormat(listAddList(requestLocateRules, responseLocateRules));
 		//System.out.println("Current is Json Mode: " + isJsonMode);
 
