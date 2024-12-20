@@ -300,6 +300,10 @@ public class CopyProfile {
 									List<ParsedHttpParameter> params = httpRequest.parameters();
 									List<HttpParameter> updatedParams = new ArrayList<>();
 									for (ParsedHttpParameter param : params) {
+										// JSON parameters are incompatible, maybe XML is to? TODO: check
+										if (param.type().equals(HttpParameterType.JSON)) {
+											continue;
+										}
 										if (param.type().equals(HttpParameterType.BODY))
 										{
 											String paramString = replacement.getPattern().matcher(entireRequest.substring(param.nameOffsets().startIndexInclusive(), param.valueOffsets().endIndexExclusive())).replaceAll(replacement.getReplace());
