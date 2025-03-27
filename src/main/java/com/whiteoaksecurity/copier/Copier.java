@@ -295,71 +295,75 @@ public class Copier implements BurpExtension {
 		JLabel exportLabel = new JLabel("Export the current profiles to a JSON file.");
 		JButton exportButton = new JButton("Export");
 		exportButton.addActionListener((ActionEvent e) -> {
-			JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setDialogTitle("Export Copy Profiles to File");   
- 
-			int userSelection = fileChooser.showSaveDialog(parent);
- 
-			if (userSelection == JFileChooser.APPROVE_OPTION) {
-				File exportFile = fileChooser.getSelectedFile();
-				try {
-					BufferedWriter writer = new BufferedWriter(new FileWriter(exportFile));
-					CopyProfile[] profileArray = new CopyProfile[this.profiles.getItemCount()];
-					for (int i = 0; i < this.profiles.getItemCount(); i++) {
-						profileArray[i] = this.profiles.getItemAt(i);
+			try {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setDialogTitle("Export Copy Profiles to File");
+				int userSelection = fileChooser.showSaveDialog(parent);
+				if (userSelection == JFileChooser.APPROVE_OPTION) {
+					File exportFile = fileChooser.getSelectedFile();
+					try {
+						BufferedWriter writer = new BufferedWriter(new FileWriter(exportFile));
+						CopyProfile[] profileArray = new CopyProfile[this.profiles.getItemCount()];
+						for (int i = 0; i < this.profiles.getItemCount(); i++) {
+							profileArray[i] = this.profiles.getItemAt(i);
+						}
+						writer.write(objectMapper.writeValueAsString(profileArray));
+						writer.flush();
+						writer.close();
+					} catch (JsonProcessingException ex) {
+						api.logging().logToError(ex.getMessage());
+					} catch (IOException ex) {
+						api.logging().logToError(ex.getMessage());
 					}
-					writer.write(objectMapper.writeValueAsString(profileArray));
-					writer.flush();
-					writer.close();
-				} catch (JsonProcessingException ex) {
-					api.logging().logToError(ex.getMessage());
-				} catch (IOException ex) {
-					api.logging().logToError(ex.getMessage());
 				}
+			}catch (Exception exception){
+				System.out.println(exception.getMessage());
 			}
 		});
 		
 		JLabel importLabel = new JLabel("Import profiles from a JSON file.");
 		JButton importButton = new JButton("Import");
 		importButton.addActionListener((ActionEvent e) -> {
-			JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setDialogTitle("Import Copy Profiles from File");
-			
-			int userSelection = fileChooser.showOpenDialog(parent);
-			
-			if (userSelection == JFileChooser.APPROVE_OPTION) {
-				File importFile = fileChooser.getSelectedFile();
-				try {
-					StringBuilder sb = new StringBuilder();
-					BufferedReader br = new BufferedReader(new FileReader(importFile));
-					String line;
-					while ((line = br.readLine()) != null) {
-						sb.append(line).append("\n");
-					}
-					br.close();
-					
-					List<CopyProfile> profileList = objectMapper.readValue(sb.toString(), new TypeReference<List<CopyProfile>>(){});					
-					this.profiles.removeAllItems();
+			try {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setDialogTitle("Import Copy Profiles from File");
+				int userSelection = fileChooser.showOpenDialog(parent);
+				if (userSelection == JFileChooser.APPROVE_OPTION) {
+					File importFile = fileChooser.getSelectedFile();
+					try {
+						StringBuilder sb = new StringBuilder();
+						BufferedReader br = new BufferedReader(new FileReader(importFile));
+						String line;
+						while ((line = br.readLine()) != null) {
+							sb.append(line).append("\n");
+						}
+						br.close();
 
-					for (CopyProfile c : profileList) {
-						this.profiles.addItem(c);
-					}
-					
-					// Set Request Table Column Widths
-					resizeColumnWidth(requestRulesTable);
+						List<CopyProfile> profileList = objectMapper.readValue(sb.toString(), new TypeReference<List<CopyProfile>>(){});
+						this.profiles.removeAllItems();
 
-					// Set Response Table Column Widths
-					resizeColumnWidth(responseRulesTable);
-				}
-				catch (IOException ex) {
-					api.logging().logToError(ex.getMessage());
-				}
-				catch (Exception ex) {
-					for (StackTraceElement a : ex.getStackTrace())
-					{
-						api.logging().logToError(a.toString());
+						for (CopyProfile c : profileList) {
+							this.profiles.addItem(c);
+						}
+
+						// Set Request Table Column Widths
+						resizeColumnWidth(requestRulesTable);
+
+						// Set Response Table Column Widths
+						resizeColumnWidth(responseRulesTable);
+					}
+					catch (IOException ex) {
+						api.logging().logToError(ex.getMessage());
+					}
+					catch (Exception ex) {
+						for (StackTraceElement a : ex.getStackTrace())
+						{
+							api.logging().logToError(a.toString());
+						}
 					}
 				}
+			}catch (Exception exception){
+				System.out.println(exception.getMessage());
 			}
 		});
 		

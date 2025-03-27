@@ -85,32 +85,36 @@ public class UiUtils {
 
 
     public static String getFileSavePath(String fileOrDirToSavePath) {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("选择文件保存路径:");
-        int userSelection = fileChooser.showSaveDialog(null);
-        //JFileChooser.APPROVE_OPTION: 用户点击了“确定”或“打开”按钮。
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File fileToSave = fileChooser.getSelectedFile();
-            fileOrDirToSavePath = fileToSave.getAbsolutePath(); //此抽象路径名的绝对路径名的字符串
-        } else {
-            JOptionPane.showMessageDialog(null, "用户取消保存!");
-        }
+        try {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("选择文件保存路径:");
+            int userSelection = fileChooser.showSaveDialog(null);
+            //JFileChooser.APPROVE_OPTION: 用户点击了“确定”或“打开”按钮。
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                fileOrDirToSavePath = fileToSave.getAbsolutePath(); //此抽象路径名的绝对路径名的字符串
+            } else {
+                JOptionPane.showMessageDialog(null, "用户取消保存!");
+            }
+        }catch (Exception exception){System.out.println(exception.getMessage());}
         return fileOrDirToSavePath;
     }
 
 
     public static String getDirToSavePath(String fileOrDirToSavePath) {
-        // 创建一个文件夹选择框
-        JFileChooser folderChooser = new JFileChooser();
-        folderChooser.setDialogTitle("选择文件夹保存路径:");
-        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 只选择文件夹
-        int userSelection = folderChooser.showSaveDialog(null);
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File folderToSave = folderChooser.getSelectedFile();
-            fileOrDirToSavePath = folderToSave.getAbsolutePath();
-        } else {
-            JOptionPane.showMessageDialog(null, "用户取消保存!");
-        }
+        try {
+            // 创建一个文件夹选择框
+            JFileChooser folderChooser = new JFileChooser();
+            folderChooser.setDialogTitle("选择文件夹保存路径:");
+            folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); // 只选择文件夹
+            int userSelection = folderChooser.showSaveDialog(null);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File folderToSave = folderChooser.getSelectedFile();
+                fileOrDirToSavePath = folderToSave.getAbsolutePath();
+            } else {
+                JOptionPane.showMessageDialog(null, "用户取消保存!");
+            }
+        }catch (Exception exception){System.out.println(exception.getMessage());}
         return fileOrDirToSavePath;
     }
 
