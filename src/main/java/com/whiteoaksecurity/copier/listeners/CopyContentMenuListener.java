@@ -30,6 +30,12 @@ public class CopyContentMenuListener implements ActionListener {
 		//选择保存模式
 		int saveOption = getSaveOption();
 		String savePath = getFileOrDirToSavePath(saveOption);
+		//初始化命名规则
+		String fileNamePattern = "";
+		if (saveOption == SaveToMultiFiles) {
+			fileNamePattern = getMultiFileNamePattern();
+		}
+
 
 		if (saveOption>-1 && savePath != null){
 			//整理所有选中的消息
@@ -49,7 +55,7 @@ public class CopyContentMenuListener implements ActionListener {
 			int totalMsg = selectedRequestResponses.size();
 			if (splitNum > totalMsg && totalMsg > 0){
 				//直接处理
-				replaceAndCopyRequestResponses(selectedRequestResponses, saveOption, savePath, 0, true);
+				replaceAndCopyRequestResponses(selectedRequestResponses, saveOption, savePath, 0, true, fileNamePattern);
 			} else if (totalMsg > splitNum) {
 				// 超过一次处理的就不允许保存到剪贴板
 				if (saveOption == SaveToClipboard){
@@ -60,7 +66,7 @@ public class CopyContentMenuListener implements ActionListener {
 				ArrayList<ArrayList<HttpRequestResponse>> subLists = splitList(selectedRequestResponses, splitNum);
 				int listSize = subLists.size();
 				for (int index = 0; index < listSize; index++) {
-					replaceAndCopyRequestResponses(subLists.get(index), saveOption, savePath, splitNum * index, listSize - index==1);
+					replaceAndCopyRequestResponses(subLists.get(index), saveOption, savePath, splitNum * index, listSize - index==1, fileNamePattern);
 				}
 			}
 		}
@@ -68,19 +74,20 @@ public class CopyContentMenuListener implements ActionListener {
 
 	/**
 	 * @param selectedRequestResponses 被选择的报文列表
-	 * @param saveOption 保存选项  文件|目录|剪贴板
-	 * @param savePath 保存路径  文件名|目录|空
-	 * @param saveBaseNum 计数基数 当保存到目录，并且被选择的报文列表超过 splitSize 时,需要这个数字作为基础计数,不然会一直在1-50循环写入
-	 * @param showMsg 是不是最后一项数据,是的话就可以显示弹窗信息了
+	 * @param saveOption               保存选项  文件|目录|剪贴板
+	 * @param savePath                 保存路径  文件名|目录|空
+	 * @param saveBaseNum              计数基数 当保存到目录，并且被选择的报文列表超过 splitSize 时,需要这个数字作为基础计数,不然会一直在1-50循环写入
+	 * @param showMsg                  是不是最后一项数据,是的话就可以显示弹窗信息了
+	 * @param fileNamePattern
 	 */
-	private void replaceAndCopyRequestResponses(ArrayList<HttpRequestResponse> selectedRequestResponses, int saveOption, String savePath, int saveBaseNum, boolean showMsg) {
+	private void replaceAndCopyRequestResponses(ArrayList<HttpRequestResponse> selectedRequestResponses, int saveOption, String savePath, int saveBaseNum, boolean showMsg, String fileNamePattern) {
 		//根据规则进行替换处理
 		ArrayList<HttpRequestResponse> replacedRequestResponses = this.profile.replace(selectedRequestResponses, this.copyRequest, this.copyResponse);
 		//根据规则进行位置提取
 		String copyBuffer = this.profile.copyLocateDate(replacedRequestResponses, this.copyRequest, this.copyResponse);
 		//写入内容到自定义文件或剪贴板
 		if (!copyBuffer.isEmpty()){
-			WriteResultToFileOrClipboard(copyBuffer, saveOption, savePath, saveBaseNum, showMsg);
+			WriteResultToFileOrClipboard(copyBuffer, saveOption, savePath, saveBaseNum, showMsg, fileNamePattern);
 		}
 	}
 

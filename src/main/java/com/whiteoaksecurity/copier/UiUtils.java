@@ -11,8 +11,8 @@ import java.util.List;
 
 public class UiUtils {
 
-    public static final int saveToOneFile = 0;
-    public static final int SaveToMultipleFiles = 1;
+    public static final int saveToSingleFile = 0;
+    public static final int SaveToMultiFiles = 1;
     public static final int SaveToClipboard = 2;
 
     /**
@@ -32,9 +32,11 @@ public class UiUtils {
 
     /**
      * 保存到多个文件
+     *
      * @param copyBuffer
+     * @param fileNamePattern
      */
-    public static void saveToMultipleFiles(String copyBuffer, String folderToSavePath, int saveBaseNum, boolean showMsgDialog) {
+    public static void saveToMultipleFiles(String copyBuffer, String folderToSavePath, int saveBaseNum, boolean showMsgDialog, String fileNamePattern) {
         try {
             File folderToSave = new File(folderToSavePath);
             // 使用正则表达式分割字符串
@@ -46,7 +48,8 @@ public class UiUtils {
 
             // 保存内容到文件夹中的多个文件
             for (int i = 0; i < parts.size(); i++) {
-                String fileName = (saveBaseNum + i) + ".txt"; // 文件名
+                int seq = saveBaseNum + i;
+                String fileName = FileName.renderFileName(fileNamePattern, seq);
                 Path filePath = folderToSave.toPath().resolve(fileName);
                 String content = parts.get(i);
                 Utils.writeToFileCover(filePath, content, StandardCharsets.UTF_8);
@@ -127,10 +130,10 @@ public class UiUtils {
         String fileOrDirToSavePath = null;
 
         switch (saveOption) {
-            case saveToOneFile: // 单个文件
+            case saveToSingleFile: // 单个文件
                 fileOrDirToSavePath = getFileSavePath(fileOrDirToSavePath);
                 break;
-            case SaveToMultipleFiles: // 多个文件
+            case SaveToMultiFiles: // 多个文件
                 fileOrDirToSavePath = getDirToSavePath(fileOrDirToSavePath);
                 break;
             case SaveToClipboard: // 保存到剪贴板
@@ -142,18 +145,37 @@ public class UiUtils {
         return fileOrDirToSavePath;
     }
 
+
+    // getMultiFileNamePattern   从UI获取命名规则设置 默认为 {s}.html
+    public static String getMultiFileNamePattern() {
+        String defaultPattern = "{s}.html";
+        String input = JOptionPane.showInputDialog(
+                null,
+                "请输入命名规则，支持 {s}/{s-1}/{s+1}/{date}/{time} 等变量",
+                defaultPattern
+        );
+
+        if (input == null) {
+            return defaultPattern;
+        }else {
+            return input.trim().isEmpty() ? defaultPattern : input.trim();
+        }
+    }
+
     /**
      * 根据用户选项和报文文件路径写入提取结果
+     *
      * @param saveOption
+     * @param fileNamePattern
      */
-    public static void WriteResultToFileOrClipboard(String copyBuffer, int saveOption, String fileOrDirToSavePath, int baseNum, boolean showMsg) {
+    public static void WriteResultToFileOrClipboard(String copyBuffer, int saveOption, String fileOrDirToSavePath, int baseNum, boolean showMsg, String fileNamePattern) {
 
         switch (saveOption) {
-            case saveToOneFile: // 单个文件
+            case saveToSingleFile: // 单个文件
                 saveToFile(copyBuffer, fileOrDirToSavePath, showMsg);
                 break;
-            case SaveToMultipleFiles: // 多个文件
-                saveToMultipleFiles(copyBuffer, fileOrDirToSavePath, baseNum, showMsg);
+            case SaveToMultiFiles: // 多个文件
+                saveToMultipleFiles(copyBuffer, fileOrDirToSavePath, baseNum, showMsg, fileNamePattern);
                 break;
             case SaveToClipboard: // 保存到剪贴板
                 saveToClipboard(copyBuffer, showMsg);
