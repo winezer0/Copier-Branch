@@ -51,7 +51,7 @@ public class CopyContentMenuListener implements ActionListener {
 			}
 
 			// 判断数据量是否超过100
-			int splitNum = 20;
+			int splitNum = 10;
 			int totalMsg = selectedRequestResponses.size();
 			if (splitNum > totalMsg && totalMsg > 0){
 				//直接处理
@@ -64,10 +64,19 @@ public class CopyContentMenuListener implements ActionListener {
 				}
 				// 划分为多个子列表进行处理
 				ArrayList<ArrayList<HttpRequestResponse>> subLists = splitList(selectedRequestResponses, splitNum);
+				// 释放原始列表引用，因为数据已经复制到子列表中
+				selectedRequestResponses.clear();
+				selectedRequestResponses = null;
+				
 				int listSize = subLists.size();
 				for (int index = 0; index < listSize; index++) {
 					replaceAndCopyRequestResponses(subLists.get(index), saveOption, savePath, splitNum * index, listSize - index==1, fileNamePattern);
+					// 释放已处理的子列表引用，帮助GC回收
+					subLists.set(index, null);
 				}
+				// 清空子列表容器
+				subLists.clear();
+				subLists = null;
 			}
 		}
 	}
@@ -83,11 +92,24 @@ public class CopyContentMenuListener implements ActionListener {
 	private void replaceAndCopyRequestResponses(ArrayList<HttpRequestResponse> selectedRequestResponses, int saveOption, String savePath, int saveBaseNum, boolean showMsg, String fileNamePattern) {
 		//根据规则进行替换处理
 		ArrayList<HttpRequestResponse> replacedRequestResponses = this.profile.replace(selectedRequestResponses, this.copyRequest, this.copyResponse);
+		// 释放原始数据引用，帮助GC回收
+		selectedRequestResponses.clear();
+		selectedRequestResponses = null;
+		
 		//根据规则进行位置提取
 		String copyBuffer = this.profile.copyLocateDate(replacedRequestResponses, this.copyRequest, this.copyResponse);
+		// 释放替换后的数据引用，帮助GC回收
+		replacedRequestResponses.clear();
+		replacedRequestResponses = null;
+		
 		//写入内容到自定义文件或剪贴板
 		if (!copyBuffer.isEmpty()){
 			WriteResultToFileOrClipboard(copyBuffer, saveOption, savePath, saveBaseNum, showMsg, fileNamePattern);
+		}
+		
+		// 最后一批数据处理完毕后，触发GC回收内存
+		if (showMsg) {
+			System.gc();
 		}
 	}
 
